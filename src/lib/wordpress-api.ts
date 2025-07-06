@@ -81,7 +81,7 @@ async function fetchWithCache<T>(
         'User-Agent': 'NextJS-App/1.0',
       },
       next: { 
-        revalidate: Math.floor(cacheTTL / 1000) // Convert to seconds for Next.js
+        revalidate: 0 // Force revalidation on each request to prevent 404s
       }
     });
 

@@ -105,7 +105,8 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  output: 'standalone',
+  // Changed from 'standalone' to fix 404 issues on post reload
+  output: 'export',
   
   webpack: (config) => {
     config.resolve.alias = {

@@ -25,7 +25,11 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
 }
 
+// Add dynamic params config to fix 404 issues
+export const dynamicParams = true;
+
 // Generate metadata for SEO
+
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const post = await getPostBySlug(resolvedParams.slug);
@@ -68,11 +72,12 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   };
 }
 
-// Generate static params for static generation
+// Generate static params for static generation with limited posts to improve build time
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPostSlugs();
-    return slugs.map((slug) => ({ slug }));
+    // Limit to most recent posts to avoid excessive build times
+    return slugs.slice(0, 20).map(slug => ({ slug }));
   } catch (error) {
     console.error('Error generating static params:', error);
     return [];
@@ -80,7 +85,9 @@ export async function generateStaticParams() {
 }
 
 // Mark the route as dynamic to avoid build-time 404 for new posts
-export const dynamic = 'force-dynamic';
+// Change from force-dynamic to auto to allow caching but still revalidate
+export const dynamic = 'auto';
+export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;

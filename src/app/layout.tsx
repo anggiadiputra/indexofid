@@ -7,7 +7,7 @@ import MobileMenu, { DesktopNavigation } from '@/components/navigation/MobileMen
 import { ThemeProvider } from '@/components/ThemeProvider';
 import MinionThemeToggle from '@/components/MinionThemeToggle';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
-import { Analytics } from "@vercel/analytics/next";
+import AnalyticsWrapper from '@/components/AnalyticsWrapper';
 import { env } from '@/config/environment';
 
 const sourceSans = Source_Sans_3({ 
@@ -390,7 +390,7 @@ export default function RootLayout({
           <PerformanceMonitor />
         </div>
         </ThemeProvider>
-        <Analytics />
+        <AnalyticsWrapper />
       </body>
     </html>
   );

@@ -5,6 +5,7 @@ export interface RelatedPost extends WordPressPost {
   relevanceScore: number;
   matchReason: 'category' | 'tag' | 'title' | 'content';
   matchDetails: string[];
+  matchTerm?: WordPressCategory | WordPressTag;
 }
 
 export interface RelatedPostsOptions {
@@ -110,14 +111,16 @@ class RelatedPostsService {
       // Create related posts with category-based scoring
       const relatedPosts: RelatedPost[] = allCategoryPosts
         .slice(0, maxResults)
-        .map(post => ({
-          ...post,
-          relevanceScore: 50, // Base score for category match
-          matchReason: 'category' as const,
-          matchDetails: postCategories
-            .filter(cat => this.postHasCategory(post, cat.id))
-            .map(cat => cat.name)
-        }));
+        .map(post => {
+          const matchingCats = postCategories.filter(cat => this.postHasCategory(post, cat.id));
+          return {
+            ...post,
+            relevanceScore: 50, // Base score for category match
+            matchReason: 'category' as const,
+            matchDetails: matchingCats.map(cat => cat.name),
+            matchTerm: matchingCats[0], // Explicitly add the matching category object
+          };
+        });
 
       return relatedPosts;
     } catch (error) {
@@ -143,30 +146,29 @@ class RelatedPostsService {
     let totalScore = 0;
     const matchDetails: string[] = [];
     let primaryMatchReason: 'category' | 'tag' | 'title' | 'content' = 'content';
+    let primaryMatchTerm: WordPressCategory | WordPressTag | undefined = undefined;
 
     // Category matching (highest weight)
     if (options.includeCategories) {
-      const categoryScore = this.calculateCategoryScore(candidatePost, currentCategories);
-      if (categoryScore > 0) {
-        totalScore += categoryScore;
+      const { score, matchingCategories, firstMatch } = this.calculateCategoryScore(candidatePost, currentCategories);
+      if (score > 0) {
+        totalScore += score;
         primaryMatchReason = 'category';
-        const matchingCategories = currentCategories
-          .filter(cat => this.postHasCategory(candidatePost, cat.id))
-          .map(cat => cat.name);
-        matchDetails.push(...matchingCategories);
+        primaryMatchTerm = firstMatch;
+        matchDetails.push(...matchingCategories.map(c => c.name));
       }
     }
 
     // Tag matching (medium weight)
     if (options.includeTags) {
-      const tagScore = this.calculateTagScore(candidatePost, currentTags);
-      if (tagScore > 0) {
-        totalScore += tagScore;
-        if (primaryMatchReason === 'content') primaryMatchReason = 'tag';
-        const matchingTags = currentTags
-          .filter(tag => this.postHasTag(candidatePost, tag.id))
-          .map(tag => tag.name);
-        matchDetails.push(...matchingTags);
+      const { score, matchingTags, firstMatch } = this.calculateTagScore(candidatePost, currentTags);
+      if (score > 0) {
+        totalScore += score;
+        if (primaryMatchReason === 'content') {
+          primaryMatchReason = 'tag';
+          primaryMatchTerm = firstMatch;
+        }
+        matchDetails.push(...matchingTags.map(t => t.name));
       }
     }
 
@@ -189,38 +191,43 @@ class RelatedPostsService {
       ...candidatePost,
       relevanceScore: Math.round(totalScore),
       matchReason: primaryMatchReason,
-      matchDetails: Array.from(new Set(matchDetails)) // Remove duplicates
+      matchDetails: Array.from(new Set(matchDetails)), // Remove duplicates
+      matchTerm: primaryMatchTerm,
     };
   }
 
   /**
    * Calculate category matching score
    */
-  private calculateCategoryScore(post: WordPressPost, categories: WordPressCategory[]): number {
+  private calculateCategoryScore(post: WordPressPost, categories: WordPressCategory[]): { score: number; matchingCategories: WordPressCategory[]; firstMatch?: WordPressCategory } {
     let score = 0;
+    const matchingCategories: WordPressCategory[] = [];
     
     for (const category of categories) {
       if (this.postHasCategory(post, category.id)) {
         score += 50; // High score for category match
+        matchingCategories.push(category);
       }
     }
     
-    return score;
+    return { score, matchingCategories, firstMatch: matchingCategories[0] };
   }
 
   /**
    * Calculate tag matching score
    */
-  private calculateTagScore(post: WordPressPost, tags: WordPressTag[]): number {
+  private calculateTagScore(post: WordPressPost, tags: WordPressTag[]): { score: number; matchingTags: WordPressTag[]; firstMatch?: WordPressTag } {
     let score = 0;
+    const matchingTags: WordPressTag[] = [];
     
     for (const tag of tags) {
       if (this.postHasTag(post, tag.id)) {
         score += 25; // Medium score for tag match
+        matchingTags.push(tag);
       }
     }
     
-    return score;
+    return { score, matchingTags, firstMatch: matchingTags[0] };
   }
 
   /**

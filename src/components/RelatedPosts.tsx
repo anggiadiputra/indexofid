@@ -112,7 +112,12 @@ export default function RelatedPosts({
     }
   };
 
-  const getMatchReasonText = (reason: string) => {
+  const getMatchReasonText = (reason: string, term?: WordPressCategory | WordPressTag) => {
+    if (term && 'name' in term) {
+      if (reason === 'category') return `Kategori: ${term.name}`;
+      if (reason === 'tag') return `Tag: ${term.name}`;
+    }
+
     switch (reason) {
       case 'category': return 'Kategori sama';
       case 'tag': return 'Tag sama';
@@ -230,7 +235,7 @@ export default function RelatedPosts({
               {showMatchReason && post.matchReason && (
                 <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                   {getMatchReasonIcon(post.matchReason)}
-                  <span>{getMatchReasonText(post.matchReason)}</span>
+                  <span>{getMatchReasonText(post.matchReason, post.matchTerm)}</span>
                 </div>
               )}
             </article>

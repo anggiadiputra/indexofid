@@ -11,9 +11,9 @@ import { cacheManager, browserCache } from './cache-manager';
 import { serverCache } from './server-cache';
 
 // Use client-side or server-side API URL based on environment
-const API_BASE = typeof window !== 'undefined' 
+const API_BASE = typeof window !== 'undefined'
   ? env.wordpress.publicApiUrl // Client-side: use NEXT_PUBLIC_WORDPRESS_API_URL
-  : env.wordpress.apiUrl;       // Server-side: use WORDPRESS_API_URL
+  : (env.wordpress.apiUrl || env.wordpress.publicApiUrl); // Server-side fallback
 
 // Validate API_BASE configuration
 if (!API_BASE || API_BASE.trim() === '') {

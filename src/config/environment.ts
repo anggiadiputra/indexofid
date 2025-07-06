@@ -6,6 +6,9 @@ export const env = {
   site: {
     url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     name: process.env.NEXT_PUBLIC_SITE_NAME || 'Headless WordPress Blog',
+    logoText: process.env.NEXT_PUBLIC_SITE_LOGO_TEXT || '',
+    slogan: process.env.NEXT_PUBLIC_SITE_SLOGAN || '',
+    author: process.env.NEXT_PUBLIC_SITE_AUTHOR || '',
     description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'A modern, fast, and SEO-optimized headless WordPress website',
   },
   // Dynamic schema configuration

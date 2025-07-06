@@ -3,6 +3,7 @@ const crypto = require('crypto');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    domains: ['secure.gravatar.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -23,6 +24,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'heyapakabar.com',
         pathname: '/wp-content/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'secure.gravatar.com',
+        pathname: '/avatar/**',
       },
     ],
     formats: ['image/webp', 'image/avif'],

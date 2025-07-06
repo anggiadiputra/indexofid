@@ -19,6 +19,7 @@ import {
   generateWebPageSchema 
 } from '@/lib/schema-generator';
 import BlogSidebar from '@/components/BlogSidebar';
+import { env } from '@/config/environment';
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -39,9 +40,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   const plainTitle = post.title?.rendered ? post.title.rendered.replace(/<[^>]*>/g, '') : 'Untitled Post';
   const plainExcerpt = post.excerpt?.rendered ? post.excerpt.rendered.replace(/<[^>]*>/g, '') : `Read ${plainTitle} on our blog`;
 
+  // Extract authors names (if embedded)
+  const authors: string[] = post._embedded?.author?.map((a: any) => a.name).filter(Boolean) || [];
+
+  // Helper title with site name
   return {
     title: `${plainTitle} | Headless WordPress Blog`,
     description: plainExcerpt || `Read ${plainTitle} on our blog`,
+    authors: authors.length ? authors.map((n) => ({ name: n })) : undefined,
     openGraph: {
       title: plainTitle,
       description: plainExcerpt,
@@ -49,6 +55,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       publishedTime: post.date,
       modifiedTime: post.modified,
       url: `/${post.slug}`,
+      authors,
     },
     twitter: {
       card: 'summary_large_image',
@@ -71,6 +78,9 @@ export async function generateStaticParams() {
     return [];
   }
 }
+
+// Mark the route as dynamic to avoid build-time 404 for new posts
+export const dynamic = 'force-dynamic';
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;
@@ -136,6 +146,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   // Filter featured posts to exclude current post
   const sidebarFeaturedPosts = featuredPosts.filter(p => p.id !== post?.id);
   const featuredImageUrl = getFeaturedImageUrl(post);
+
+  // Author data
+  const authorData = post._embedded?.author?.[0] ?? null;
+  const authorName = authorData?.name || env.site.author || env.site.name;
+  const authorDescription = authorData?.description || env.site.description;
+  const avatarUrl = authorData?.avatar_urls?.['96'] || authorData?.avatar_urls?.['48'] || null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -373,20 +389,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 {/* Author Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-red-500 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-2xl font-bold text-white">JK</span>
-                  </div>
+                  {avatarUrl ? (
+                    <Image
+                      src={avatarUrl}
+                      alt={authorName}
+                      width={80}
+                      height={80}
+                      className="rounded-full shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-red-500 rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-2xl font-bold text-white">{authorName.slice(0,2).toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Author Info */}
                 <div className="flex-1">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">JasaKami.ID Team</h3>
-                    <p className="text-blue-600 dark:text-blue-400 font-medium mb-3">WordPress Expert</p>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed max-w-2xl">
-                      Tim ahli WordPress dengan pengalaman 5+ tahun dalam pengembangan, migrasi, keamanan, 
-                      dan optimasi website WordPress. Kami menyediakan solusi lengkap untuk semua kebutuhan WordPress Anda.
-                    </p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{authorName}</h3>
+                    {authorDescription && (
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed max-w-2xl mb-3" dangerouslySetInnerHTML={{__html: authorDescription}} />
+                    )}
                   </div>
 
                   {/* Social Links */}

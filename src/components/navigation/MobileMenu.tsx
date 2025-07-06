@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { env } from '@/config/environment';
 
 interface NavigationItem {
   href: string;
@@ -82,6 +83,9 @@ export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const pathname = usePathname();
+  const logoText = env.site.logoText || env.site.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  const siteName = env.site.name;
+  const currentYear = new Date().getFullYear();
 
   // Close menu when route changes
   useEffect(() => {
@@ -163,7 +167,7 @@ export default function MobileMenu() {
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
             <div className="flex items-center space-x-3">
               <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-md">
-                <span className="text-primary-foreground font-bold text-sm">WP</span>
+                <span className="text-primary-foreground font-bold text-sm">{logoText}</span>
               </div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Menu</h2>
             </div>
@@ -280,7 +284,7 @@ export default function MobileMenu() {
           <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             <div className="text-center">
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                © 2025 WP Blog
+                © {currentYear} {siteName}
               </p>
             </div>
           </div>

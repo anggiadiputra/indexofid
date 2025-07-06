@@ -7,6 +7,7 @@ import MobileMenu, { DesktopNavigation } from '@/components/navigation/MobileMen
 import { ThemeProvider } from '@/components/ThemeProvider';
 import MinionThemeToggle from '@/components/MinionThemeToggle';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
+import { env } from '@/config/environment';
 
 const sourceSans = Source_Sans_3({ 
   subsets: ['latin'],
@@ -15,8 +16,8 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: 'JasaKami.ID - Jasa Maintenance WordPress Terpercaya Indonesia',
-  description: 'Spesialis layanan pemeliharaan WordPress profesional: migrasi aman, pembersihan malware, setup VPS, dan pengelolaan server 24/7 untuk performa optimal.',
+  title: `${env.site.name}${env.site.slogan ? ' - ' + env.site.slogan : ''}`,
+  description: env.site.description,
   keywords: [
     'jasa maintenance wordpress',
     'migrasi wordpress',
@@ -29,9 +30,9 @@ export const metadata: Metadata = {
     'keamanan website',
     'optimasi wordpress'
   ],
-  authors: [{ name: 'JasaKami.ID Team' }],
-  creator: 'JasaKami.ID',
-  publisher: 'JasaKami.ID',
+  authors: [{ name: env.site.author || env.site.name }],
+  creator: env.site.name,
+  publisher: env.site.name,
   robots: {
     index: true,
     follow: true,
@@ -46,10 +47,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'id_ID',
-    url: 'https://jasakami.id',
-    siteName: 'JasaKami.ID - WordPress Maintenance Services',
-    title: 'JasaKami.ID - Jasa Maintenance WordPress Terpercaya Indonesia',
-    description: 'Spesialis layanan pemeliharaan WordPress profesional: migrasi aman, pembersihan malware, setup VPS, dan pengelolaan server 24/7.',
+    url: env.site.url,
+    siteName: env.site.name,
+    title: `${env.site.name}${env.site.slogan ? ' - ' + env.site.slogan : ''}`,
+    description: env.site.description,
     images: [
       {
         url: 'https://jasakami.id/og-image.jpg',
@@ -61,10 +62,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'JasaKami.ID - Jasa Maintenance WordPress Terpercaya',
-    description: 'Spesialis maintenance WordPress: migrasi, malware removal, VPS setup & management 24/7',
+    title: `${env.site.name}${env.site.slogan ? ' - ' + env.site.slogan : ''}`,
+    description: env.site.description,
     creator: '@jasakami_id',
     images: ['https://jasakami.id/twitter-image.jpg'],
+  },
+  other: {
+    slogan: env.site.slogan,
   },
   verification: {
     google: 'your-google-verification-code',
@@ -88,6 +92,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const logoText = env.site.logoText || env.site.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  const siteName = env.site.name;
+  const siteNameFirst = siteName.split(' ')[0];
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${sourceSans.variable} font-sans antialiased min-h-screen bg-background text-foreground`} suppressHydrationWarning>
@@ -99,11 +107,11 @@ export default function RootLayout({
               <div className="flex items-center">
                 <Link href="/" className="flex items-center space-x-2">
                   <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-primary rounded-md">
-                    <span className="text-primary-foreground font-bold text-xs sm:text-sm lg:text-base">WP</span>
+                    <span className="text-primary-foreground font-bold text-xs sm:text-sm lg:text-base">{logoText}</span>
                   </div>
                   <span className="text-base sm:text-lg lg:text-xl font-bold text-foreground">
-                    <span className="hidden sm:inline">WP Blog</span>
-                    <span className="sm:hidden">Blog</span>
+                    <span className="hidden sm:inline">{siteName}</span>
+                    <span className="sm:hidden">{siteNameFirst}</span>
                   </span>
                 </Link>
               </div>

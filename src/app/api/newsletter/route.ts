@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Configure route to be dynamic
+export const dynamic = 'force-dynamic';
+
 // Newsletter subscription data structure
 interface NewsletterSubscription {
   email: string;

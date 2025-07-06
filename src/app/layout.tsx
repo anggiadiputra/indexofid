@@ -7,6 +7,7 @@ import MobileMenu, { DesktopNavigation } from '@/components/navigation/MobileMen
 import { ThemeProvider } from '@/components/ThemeProvider';
 import MinionThemeToggle from '@/components/MinionThemeToggle';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
+import { Analytics } from "@vercel/analytics/react";
 import { env } from '@/config/environment';
 
 const sourceSans = Source_Sans_3({ 
@@ -137,6 +138,7 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
+          <Analytics />
 
           <footer className="border-t bg-gray-50 dark:bg-neutral-900 py-8 md:py-12 text-foreground dark:text-neutral-300">
             <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -1,0 +1,227 @@
+---
+alwaysApply: true
+---
+# Unified 10X Developer Framework - Single Mode Solution
+# Unified 10X Developer Framework - Headless WordPress Blog Project
+
+## Project Context & Architecture
+**Project**: Headless WordPress Website for Bloggers
+**Tech Stack**: Next.js 14+, TypeScript, Tailwind CSS v3, WordPress (Headless), wp-block-to-html
+**Architecture**: JAMstack, Static Site Generation (SSG) with ISR, Component-based React
+**Core Constraints**: wp-block-to-html integration, WordPress block compatibility, SEO optimization, performance < 2s
+
+## Project-Specific Technology Rules
+**wp-block-to-html**: 
+- Use v1.0.0 stable with client-side hydration support
+- Configure Tailwind CSS integration for consistent styling
+- Implement React component integration for dynamic blocks
+- Handle all WordPress core blocks with fallbacks for unsupported ones
+- Optimize for 947 blocks/ms processing speed target
+
+**WordPress Integration**:
+- Use REST API for content fetching
+- Implement proper block serialization parsing
+- Handle nested blocks (InnerBlocks) correctly
+- Maintain block attribute integrity
+- Support WordPress core blocks: paragraph, heading, image, list, quote, code, gallery, embed
+
+**Next.js Patterns**:
+- Use App Router for file-based routing
+- Implement ISR for dynamic content updates
+- Optimize images with next/image component
+- Generate static pages for SEO
+- Configure proper TypeScript interfaces
+
+## Development Standards
+**Code Quality**: Use TypeScript strict mode, functional components with hooks, proper error boundaries
+**Naming**: PascalCase for components, camelCase for functions, kebab-case for files, descriptive block names
+**Error Handling**: Graceful block fallbacks, API error handling, user-friendly error messages
+**Comments**: Block processing logic, WordPress API integration, complex transformations
+
+## Security & Authentication
+**API Security**: WordPress REST API authentication, rate limiting, CORS configuration
+**Input Validation**: Sanitize WordPress content, validate block data, XSS prevention
+**Headers**: Next.js security headers, content security policy for embedded content
+**Permissions**: Read-only WordPress access, no admin functionality on frontend
+
+## UI/UX Guidelines
+**Accessibility**: WordPress block accessibility preservation, semantic HTML from blocks
+**Performance**: < 2s load time, optimized block rendering, lazy loading for media blocks
+**Responsive**: Mobile-first Tailwind classes, responsive WordPress images
+**Feedback**: Loading states for content fetching, skeleton screens for blocks
+
+## wp-block-to-html Specific Patterns
+**Block Conversion**:
+```typescript
+import { convertBlocks } from 'wp-block-to-html';
+
+const htmlContent = convertBlocks(blocks, {
+  cssFramework: 'tailwind',
+  hydration: { strategy: 'viewport' }
+});
+```
+
+**React Integration**:
+```typescript
+import { createReactComponent } from 'wp-block-to-html/react';
+const BlockComponent = createReactComponent(blocks, {
+  cssFramework: 'tailwind'
+});
+```
+
+**Error Handling**:
+```typescript
+const renderBlock = (block) => {
+  try {
+    return convertBlocks([block]);
+  } catch (error) {
+    return `<div class="block-error">Unsupported block: ${block.blockName}</div>`;
+  }
+};
+```
+
+## Problem-Solving Approach
+**Method**: IDENTIFY → RESEARCH DOCS → IMPLEMENT → TEST → OPTIMIZE
+**wp-block-to-html Issues**: Check docs-block.madebyaris.com, test with sample blocks, validate output
+**WordPress Blocks**: Understand block structure, test with real WordPress content, validate rendering
+**Performance**: Profile block conversion, optimize bundle size, monitor Core Web Vitals
+
+## Performance & Efficiency
+**Block Processing**: 
+- Batch process blocks for better performance
+- Cache converted HTML when possible
+- Use SSR optimizations in wp-block-to-html
+- Implement progressive hydration for interactive blocks
+
+**Bundle Optimization**:
+- Tree-shake unused block renderers
+- Code split by block types
+- Optimize wp-block-to-html imports
+- Minimize Tailwind CSS bundle
+
+## Memory Cursor - Implementation Tracking
+
+### Current Implementation Status
+**Phase**: Foundation Setup (Phase 1)
+**Last Updated**: January 2025
+
+### Completed Tasks
+- [ ] Project setup and documentation (PRD.md, todo.md)
+- [ ] Next.js project initialization
+- [ ] Tailwind CSS configuration
+- [ ] wp-block-to-html integration
+- [ ] WordPress API connection
+- [ ] Basic block rendering
+
+### Active Development Context
+**Current Focus**: [Update when working on specific features]
+**Block Support Status**: 
+- Paragraph: [ ] Not Started [ ] In Progress [ ] Complete
+- Heading: [ ] Not Started [ ] In Progress [ ] Complete  
+- Image: [ ] Not Started [ ] In Progress [ ] Complete
+- List: [ ] Not Started [ ] In Progress [ ] Complete
+- Quote: [ ] Not Started [ ] In Progress [ ] Complete
+
+### Implementation Memory
+**Key Learnings**: [Document important discoveries during development]
+**Challenges Faced**: [Track blockers and solutions]
+**Performance Metrics**: [Track actual vs target performance]
+**Code Patterns**: [Document reusable patterns discovered]
+
+### Next Implementation Session
+**Priority Tasks**: [Update before each coding session]
+1. [Current high-priority task]
+2. [Next important task]
+3. [Following task]
+
+**Context to Remember**: [Important context to maintain between sessions]
+
+## WordPress Block Processing Rules
+
+### Block Data Structure Understanding
+```typescript
+interface WordPressBlock {
+  blockName: string;
+  attrs: Record<string, any>;
+  innerBlocks: WordPressBlock[];
+  innerHTML: string;
+}
+```
+
+### wp-block-to-html Configuration
+```typescript
+const config = {
+  cssFramework: 'tailwind',
+  hydration: {
+    strategy: 'viewport', // or 'interaction', 'idle', 'immediate'
+    rootSelector: '#app'
+  },
+  ssrOptions: {
+    enabled: true,
+    optimizationLevel: 'maximum',
+    lazyLoadMedia: true
+  }
+};
+```
+
+### Block Rendering Pipeline
+1. Fetch WordPress content via REST API
+2. Parse block data using @wordpress/block-serialization-default-parser
+3. Convert blocks using wp-block-to-html with Tailwind integration
+4. Render React components with proper hydration
+5. Handle errors with fallback components
+
+## AI Assistance Mode
+**Communication**: Specify block types, provide WordPress content examples, mention wp-block-to-html version
+**Code Generation**: Request complete block renderers, ask for Tailwind integration examples
+**Debugging**: Share block data structure, explain expected vs actual output, include wp-block-to-html logs
+**Learning**: Ask for wp-block-to-html best practices, WordPress block documentation, performance patterns
+
+## Quick Commands
+- "BLOCK MODE" - Focus on WordPress block processing and wp-block-to-html integration
+- "PERF MODE" - Optimize block conversion performance and bundle size
+- "WP API MODE" - Work on WordPress REST API integration and data fetching
+- "DESIGN MODE" - Focus on Tailwind styling and responsive design for blocks
+- "MEMORY UPDATE" - Update implementation tracking and current context
+
+## Team Collaboration
+**Code Reviews**: Verify block rendering accuracy, check performance impact, validate accessibility
+**Documentation**: Update block support status, document custom configurations, share learnings
+**Communication**: Clear block-related commit messages, detailed wp-block-to-html usage notes
+**Knowledge Sharing**: wp-block-to-html patterns, WordPress block insights, performance optimizations
+
+## Rapid Development Patterns
+**Setup**: wp-block-to-html boilerplate, WordPress API helpers, Tailwind block styling
+**Common Tasks**: Block renderer components, WordPress content fetching, SEO meta generation
+**Testing**: Block conversion validation, WordPress API mocking, performance benchmarking
+**Deployment**: Static site generation, CDN optimization, WordPress API proxy
+
+## Memory Cursor Commands
+**"MEMORY SAVE [context]"** - Save current implementation context
+**"MEMORY LOAD"** - Load last saved implementation context  
+**"PROGRESS UPDATE [task] [status]"** - Update task completion status
+**"CONTEXT SWITCH [feature]"** - Switch development context and save current state
+**"LEARNING ADD [insight]"** - Add new learning or pattern to memory
+
+## Project-Specific Debugging
+**wp-block-to-html Issues**:
+- Check block data structure is valid
+- Verify Tailwind CSS integration
+- Test with individual blocks first
+- Check hydration strategy compatibility
+
+**WordPress API Issues**:
+- Validate endpoint responses
+- Check CORS configuration
+- Test with different content types
+- Verify block serialization format
+
+**Performance Issues**:
+- Profile block conversion speed
+- Check bundle size impact
+- Monitor Core Web Vitals
+- Test on slower devices
+
+---
+
+*This cursor rules file is living documentation that evolves with the project implementation.*

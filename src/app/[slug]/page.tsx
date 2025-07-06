@@ -85,9 +85,10 @@ export async function generateStaticParams() {
 }
 
 // Mark the route as dynamic to avoid build-time 404 for new posts
-// Change from force-dynamic to auto to allow caching but still revalidate
-export const dynamic = 'auto';
-export const revalidate = 60; // Revalidate every 60 seconds
+// Use force-dynamic to ensure fresh data on each request
+export const dynamic = 'force-dynamic';
+// Disable static generation for this route
+export const fetchCache = 'force-no-store';
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;

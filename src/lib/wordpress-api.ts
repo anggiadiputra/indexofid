@@ -10,10 +10,10 @@ import { env } from '@/config/environment';
 import { cacheManager, browserCache } from './cache-manager';
 import { serverCache } from './server-cache';
 
-// Use client-side or server-side API URL based on environment
+// Use client-side or server-side API URL based on environment with www fallback
 const API_BASE = typeof window !== 'undefined'
-  ? env.wordpress.publicApiUrl // Client-side: use NEXT_PUBLIC_WORDPRESS_API_URL
-  : (env.wordpress.apiUrl || env.wordpress.publicApiUrl); // Server-side fallback
+  ? (env.wordpress.publicApiUrl || 'https://www.jasakami.id/wp-json/wp/v2') // Client-side with fallback
+  : (env.wordpress.apiUrl || env.wordpress.publicApiUrl || 'https://www.jasakami.id/wp-json/wp/v2'); // Server-side with fallback
 
 // Validate API_BASE configuration
 if (!API_BASE || API_BASE.trim() === '') {
@@ -191,14 +191,20 @@ export async function getAllPosts(
 export async function getPostBySlug(slug: string): Promise<WordPressPost | null> {
   const cacheKey = `post_slug_${slug}`;
   
+  // Debug log for troubleshooting
+  console.log(`[getPostBySlug] Fetching post with slug: ${slug}, API_BASE: ${API_BASE}`);
+  
   // Check cache first
   const cached = cacheManager.get<WordPressPost>(cacheKey);
   if (cached) {
+    console.log(`[getPostBySlug] Cache hit for slug: ${slug}`);
     return cached;
   }
 
   try {
     const url = `${API_BASE}/posts?slug=${slug}&_embed=true`;
+    console.log(`[getPostBySlug] Making API request to: ${url}`);
+    
     const posts = await fetchWithCache<WordPressPost[]>(
       url, 
       cacheKey, 
@@ -206,7 +212,10 @@ export async function getPostBySlug(slug: string): Promise<WordPressPost | null>
       true
     );
 
+    console.log(`[getPostBySlug] API response for ${slug}: ${posts ? posts.length : 0} posts found`);
+
     if (!posts.length) {
+      console.warn(`[getPostBySlug] No posts found for slug: ${slug}`);
       return null;
     }
 
@@ -220,8 +229,43 @@ export async function getPostBySlug(slug: string): Promise<WordPressPost | null>
 
     return post;
   } catch (error) {
-    console.error('Error fetching post:', error);
-    return null;
+    console.error(`[getPostBySlug] Error fetching post with slug ${slug}:`, error);
+    // Try alternative API URL as fallback
+    try {
+      const alternativeUrl = `https://www.jasakami.id/wp-json/wp/v2/posts?slug=${slug}&_embed=true`;
+      console.log(`[getPostBySlug] Trying alternative URL: ${alternativeUrl}`);
+      
+      const response = await fetch(alternativeUrl, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'NextJS-App/1.0',
+        },
+        next: { revalidate: 60 }
+      });
+      
+      if (!response.ok) {
+        console.error(`[getPostBySlug] Alternative request failed: ${response.status}`);
+        return null;
+      }
+      
+      const posts = await response.json();
+      if (!posts.length) {
+        console.warn(`[getPostBySlug] No posts found in alternative request for slug: ${slug}`);
+        return null;
+      }
+      
+      const post = {
+        ...posts[0],
+        blocks: parseContentToBlocks(posts[0].content.rendered),
+      };
+      
+      // Cache the result
+      cacheManager.cachePost(post, 10 * 60 * 1000);
+      return post;
+    } catch (fallbackError) {
+      console.error(`[getPostBySlug] Fallback request also failed for slug ${slug}:`, fallbackError);
+      return null;
+    }
   }
 }
 

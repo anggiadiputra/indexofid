@@ -19,11 +19,14 @@ export const env = {
       phone: process.env.NEXT_PUBLIC_ORG_PHONE || '+62-812-3456-7890',
       logo: process.env.NEXT_PUBLIC_ORG_LOGO || '/logo.png',
       defaultImage: process.env.NEXT_PUBLIC_DEFAULT_IMAGE || '/default-article-image.jpg',
+      email: process.env.NEXT_PUBLIC_ORG_EMAIL || 'info@jasakami.id',
+      address: process.env.NEXT_PUBLIC_ORG_ADDRESS || 'Jakarta, Indonesia',
+      hours: process.env.NEXT_PUBLIC_ORG_HOURS || 'Senin - Jumat: 09:00 - 18:00',
     },
     social: {
-      facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || '',
-      twitter: process.env.NEXT_PUBLIC_TWITTER_URL || '',
-      linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL || '',
+      facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://facebook.com/jasakami.id',
+      twitter: process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com/jasakami_id',
+      linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL || 'https://linkedin.com/company/jasakami.id',
     },
     services: {
       primary: [

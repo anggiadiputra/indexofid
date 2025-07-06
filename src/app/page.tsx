@@ -5,8 +5,8 @@ import ClientsCarousel from '@/components/ClientsCarousel';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { getHomepageData } from '@/lib/wordpress-api';
 
-// Aggressive caching for homepage
-export const revalidate = 300; // 5 minutes ISR
+// Configure homepage rendering
+export const dynamic = 'force-dynamic'; // Force dynamic rendering instead of static
 
 export default async function HomePage() {
   // Use parallel data fetching for optimal TTFB

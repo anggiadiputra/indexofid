@@ -81,7 +81,7 @@ async function fetchWithCache<T>(
         'User-Agent': 'NextJS-App/1.0',
       },
       next: { 
-        revalidate: 0 // Force revalidation on each request to prevent 404s
+        revalidate: 60 // Set revalidation time to 60 seconds instead of 0
       }
     });
 
@@ -657,6 +657,8 @@ export async function getHomepageData(): Promise<{
   tags: WordPressTag[];
   popularPosts: WordPressPost[];
 }> {
+  // Force dynamic rendering for homepage data
+  const dynamic = true;
   const cacheKey = 'homepage_data';
   
   // Try server cache first

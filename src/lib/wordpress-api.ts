@@ -42,13 +42,13 @@ class WordPressApiError extends Error {
   }
 }
 
-// PERFORMANCE OPTIMIZATION: Increased cache TTL values to align with page revalidation intervals
+// PERFORMANCE OPTIMIZATION: Cache TTL values optimized for SSR + aggressive server-side caching
 const CACHE_TTL = {
-  POSTS_LIST: 60 * 60 * 1000,     // 1 hour for post lists (blog page revalidates every 2 hours)
+  POSTS_LIST: 60 * 60 * 1000,     // 1 hour for post lists (blog page uses 24-hour server cache with SSR)
   SINGLE_POST: 24 * 60 * 60 * 1000, // 24 hours for individual posts (posts revalidate every 15 days)
   CATEGORIES: 12 * 60 * 60 * 1000, // 12 hours for categories (category pages revalidate every 24 hours)
   TAGS: 12 * 60 * 60 * 1000,      // 12 hours for tags (tag pages revalidate every 24 hours)
-  SEARCH: 30 * 60 * 1000,         // 30 minutes for search results (search page revalidates every hour)
+  SEARCH: 30 * 60 * 1000,         // 30 minutes for search results (search has dedicated 1-hour cache)
   POPULAR: 2 * 60 * 60 * 1000,    // 2 hours for popular posts
 };
 

@@ -81,17 +81,16 @@ async function getBlogPageData(): Promise<{
 
   const blogData = { posts, categories, tags, popularPosts };
   
-  // Cache for 10 minutes
-  serverCache.set(cacheKey, blogData, 10 * 60 * 1000);
+  // Cache for 24 hours - Much more aggressive caching for better performance
+  serverCache.set(cacheKey, blogData, 24 * 60 * 60 * 1000); // 24 hours
   
   return blogData;
 }
 
-// Mark this route as dynamic because it depends on searchParams
-// export const dynamic = 'force-dynamic'; // REMOVED - This was causing performance issues
+// Mark this route as SSR (Server-Side Rendering) for fresh content on each request
+// Removed ISR revalidate to enable SSR with 24-hour server-side caching
 
-// Implement ISR (Incremental Static Regeneration) for better performance
-export const revalidate = 7200; // Revalidate every 2 hours
+// export const revalidate = 7200; // REMOVED - Converting to SSR
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   // Properly await searchParams in Next.js 15
@@ -136,23 +135,55 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
     // Handle filtering by category, tag, or search
     if (searchQuery) {
-      posts = await searchPosts(searchQuery, currentPage, postsPerPage);
+      const searchCacheKey = `search-${searchQuery}-page-${currentPage}`;
+      const cachedSearchResults = serverCache.get<WordPressPost[]>(searchCacheKey);
+      if (cachedSearchResults) {
+        posts = cachedSearchResults;
+      } else {
+        posts = await searchPosts(searchQuery, currentPage, postsPerPage);
+        // Cache search results for 1 hour
+        serverCache.set(searchCacheKey, posts, 60 * 60 * 1000);
+      }
     } else if (categorySlug) {
       selectedCategory = await getCategoryBySlug(categorySlug);
       if (selectedCategory) {
-        posts = await getPostsByCategory(selectedCategory.id, currentPage, postsPerPage);
+        const categoryCacheKey = `category-${selectedCategory.id}-page-${currentPage}`;
+        const cachedCategoryResults = serverCache.get<WordPressPost[]>(categoryCacheKey);
+        if (cachedCategoryResults) {
+          posts = cachedCategoryResults;
+        } else {
+          posts = await getPostsByCategory(selectedCategory.id, currentPage, postsPerPage);
+          // Cache category results for 6 hours
+          serverCache.set(categoryCacheKey, posts, 6 * 60 * 60 * 1000);
+        }
       } else {
         posts = await getAllPosts(currentPage, postsPerPage);
       }
     } else if (tagSlug) {
       selectedTag = await getTagBySlug(tagSlug);
       if (selectedTag) {
-        posts = await getPostsByTag(selectedTag.id, currentPage, postsPerPage);
+        const tagCacheKey = `tag-${selectedTag.id}-page-${currentPage}`;
+        const cachedTagResults = serverCache.get<WordPressPost[]>(tagCacheKey);
+        if (cachedTagResults) {
+          posts = cachedTagResults;
+        } else {
+          posts = await getPostsByTag(selectedTag.id, currentPage, postsPerPage);
+          // Cache tag results for 6 hours
+          serverCache.set(tagCacheKey, posts, 6 * 60 * 60 * 1000);
+        }
       } else {
         posts = await getAllPosts(currentPage, postsPerPage);
       }
     } else {
-      posts = await getAllPosts(currentPage, postsPerPage);
+      const allPostsCacheKey = `all-posts-page-${currentPage}`;
+      const cachedAllPosts = serverCache.get<WordPressPost[]>(allPostsCacheKey);
+      if (cachedAllPosts) {
+        posts = cachedAllPosts;
+      } else {
+        posts = await getAllPosts(currentPage, postsPerPage);
+        // Cache all posts pagination for 2 hours
+        serverCache.set(allPostsCacheKey, posts, 2 * 60 * 60 * 1000);
+      }
     }
   } catch (err) {
     console.error('Error fetching data for blog page:', err);

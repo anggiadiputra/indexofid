@@ -71,6 +71,9 @@ export async function generateStaticParams() {
   }
 }
 
+// PERFORMANCE OPTIMIZATION: Add ISR for tag pages
+export const revalidate = 86400; // Revalidate every 24 hours (tags change very rarely)
+
 export default async function TagPage({ params }: TagPageProps) {
   const resolvedParams = await params;
   

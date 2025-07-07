@@ -6,7 +6,6 @@ import './globals.css';
 import MobileMenu, { DesktopNavigation } from '@/components/navigation/MobileMenu';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import MinionThemeToggle from '@/components/MinionThemeToggle';
-import PerformanceMonitor from '@/components/PerformanceMonitor';
 import AnalyticsWrapper from '@/components/AnalyticsWrapper';
 import { env } from '@/config/environment';
 
@@ -14,6 +13,8 @@ const sourceSans = Source_Sans_3({
   subsets: ['latin'],
   variable: '--font-source-sans',
   display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
 });
 
 export const metadata: Metadata = {
@@ -70,6 +71,8 @@ export const metadata: Metadata = {
   },
   other: {
     slogan: env.site.slogan,
+    'dns-prefetch': 'https://fonts.googleapis.com',
+    'preconnect': 'https://fonts.gstatic.com',
   },
   verification: {
     google: 'your-google-verification-code',
@@ -385,9 +388,6 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
-
-          {/* Performance Monitor - Only shows in development */}
-          <PerformanceMonitor />
         </div>
         </ThemeProvider>
         <AnalyticsWrapper />

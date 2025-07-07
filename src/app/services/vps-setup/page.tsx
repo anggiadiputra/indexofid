@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+// ISR configuration for service pages (static content, revalidate less frequently)
+export const revalidate = 86400; // Revalidate every 24 hours
+
 export const metadata: Metadata = {
   title: 'Jasa Setup VPS WordPress | JasaKami.ID',
   description: 'Layanan konfigurasi VPS khusus WordPress. Optimalkan performa dan keamanan website dengan setup server yang tepat, cepat, dan aman.',

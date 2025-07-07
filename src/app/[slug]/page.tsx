@@ -5,21 +5,47 @@ import { Metadata } from 'next';
 import { getPostBySlug, getAllPostSlugs, getAllCategories, getAllTags, getAllPosts } from '@/lib/wordpress-api';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import BlockRenderer from '@/components/blocks/BlockRenderer';
-import TableOfContents from '@/components/TableOfContents';
-import LiveSearch from '@/components/LiveSearch';
-import RelatedPosts from '@/components/RelatedPosts';
-import SocialShare from '@/components/SocialShare';
 import PostViews from '@/components/PostViews';
-import NewsletterSignup from '@/components/NewsletterSignup';
-import PopularPosts from '@/components/PopularPosts';
 import { 
   generateBreadcrumbSchema, 
   generateArticleSchema, 
   generateOrganizationSchema, 
   generateWebPageSchema 
 } from '@/lib/schema-generator';
-import BlogSidebar from '@/components/BlogSidebar';
 import { env } from '@/config/environment';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for non-critical components
+const TableOfContents = dynamic(() => import('@/components/TableOfContents'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>,
+  ssr: true
+});
+
+const LiveSearch = dynamic(() => import('@/components/LiveSearch'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-12"></div>,
+  ssr: true
+});
+
+const RelatedPosts = dynamic(() => import('@/components/RelatedPosts'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const SocialShare = dynamic(() => import('@/components/SocialShare'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-16"></div>
+});
+
+const NewsletterSignup = dynamic(() => import('@/components/NewsletterSignup'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
+
+const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
+  ssr: true
+});
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -84,11 +110,8 @@ export async function generateStaticParams() {
   }
 }
 
-// Mark the route as dynamic to avoid build-time 404 for new posts
-// Use force-dynamic to ensure fresh data on each request
-export const dynamic = 'force-dynamic';
-// Disable static generation for this route
-export const fetchCache = 'force-no-store';
+// PERFORMANCE OPTIMIZATION: Use ISR instead of force-dynamic
+export const revalidate = 1296000; // Revalidate every 15 days
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;

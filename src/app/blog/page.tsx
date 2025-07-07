@@ -13,12 +13,28 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { serverCache } from '@/lib/server-cache';
 import { SinglePostSkeleton } from '@/components/BlogPostSkeleton';
-import PopularPosts from '@/components/PopularPosts';
-import LiveSearch from '@/components/LiveSearch';
-import NewsletterSignup from '@/components/NewsletterSignup';
 import { PostViewCount } from '@/components/PostViews';
 import { Suspense } from 'react';
-import BlogSidebar from '@/components/BlogSidebar';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for non-critical components
+const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const LiveSearch = dynamic(() => import('@/components/LiveSearch'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-12"></div>,
+  ssr: true
+});
+
+const NewsletterSignup = dynamic(() => import('@/components/NewsletterSignup'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
+
+const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
+  ssr: true
+});
 
 interface BlogPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -72,7 +88,10 @@ async function getBlogPageData(): Promise<{
 }
 
 // Mark this route as dynamic because it depends on searchParams
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic'; // REMOVED - This was causing performance issues
+
+// Implement ISR (Incremental Static Regeneration) for better performance
+export const revalidate = 7200; // Revalidate every 2 hours
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   // Properly await searchParams in Next.js 15

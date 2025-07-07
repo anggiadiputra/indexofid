@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+// ISR configuration for service pages (static content, revalidate less frequently)
+export const revalidate = 86400; // Revalidate every 24 hours
+
 export const metadata: Metadata = {
   title: 'Jasa Migrasi WordPress Profesional | JasaKami.ID',
   description: 'Layanan migrasi website WordPress yang aman, cepat, dan terpercaya. Pindahkan website WordPress tanpa downtime, kehilangan data, dan penurunan peringkat SEO.',

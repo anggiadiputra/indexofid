@@ -45,6 +45,7 @@ export default function LiveSearch({ className = '' }: LiveSearchProps) {
   useEffect(() => {
     if (!isClient) return;
     loadSearchSuggestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isClient]);
 
   const loadSearchSuggestions = useCallback(() => {
@@ -276,6 +277,7 @@ export default function LiveSearch({ className = '' }: LiveSearchProps) {
         setSelectedIndex(-1);
         break;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, showSuggestions, selectedIndex, suggestions, results, query, performSearch, saveToSearchHistory]);
 
   // Close search results when clicking outside

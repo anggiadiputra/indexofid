@@ -114,6 +114,8 @@ export default function OptimizedImage({
         quality={quality}
         placeholder={placeholder}
         blurDataURL={placeholder === 'blur' ? generateBlurDataURL(width, height) : undefined}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setImageError(true);

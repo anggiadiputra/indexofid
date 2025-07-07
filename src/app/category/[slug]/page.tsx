@@ -5,6 +5,9 @@ import { getCategoryBySlug, getPostsByCategory, getAllPosts } from '@/lib/wordpr
 import { WordPressPost, WordPressCategory } from '@/types/wordpress';
 import LiveSearch from '@/components/LiveSearch';
 
+// PERFORMANCE OPTIMIZATION: Add ISR for category pages
+export const revalidate = 86400; // Revalidate every 24 hours (categories change very rarely)
+
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
 }

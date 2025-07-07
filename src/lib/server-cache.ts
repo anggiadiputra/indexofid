@@ -21,11 +21,12 @@ class ServerCache {
     const now = Date.now();
     let ttl = customTTL || this.defaultTTL;
 
-    // Aggressive caching for different content types
-    if (key.includes('posts_')) ttl = 2 * 60 * 1000; // 2 minutes for posts
-    if (key.includes('categories_') || key.includes('tags_')) ttl = 15 * 60 * 1000; // 15 minutes
-    if (key.includes('popular_') || key.includes('featured_')) ttl = 10 * 60 * 1000; // 10 minutes
-    if (key.includes('homepage_')) ttl = 5 * 60 * 1000; // 5 minutes for homepage
+    // Aggressive caching aligned with page revalidation intervals
+    if (key.includes('posts_')) ttl = 2 * 60 * 60 * 1000; // 2 hours for posts (blog page revalidates every 2 hours, single posts every 15 days)
+    if (key.includes('categories_') || key.includes('tags_')) ttl = 6 * 60 * 60 * 1000; // 6 hours (pages revalidate every 24 hours)
+    if (key.includes('popular_') || key.includes('featured_')) ttl = 60 * 60 * 1000; // 1 hour for popular/featured
+    if (key.includes('homepage_')) ttl = 4 * 60 * 60 * 1000; // 4 hours for homepage (page revalidates every 24 hours)
+    if (key.includes('search_')) ttl = 15 * 60 * 1000; // 15 minutes for search results (page revalidates every hour)
 
     this.cache.set(key, {
       data,

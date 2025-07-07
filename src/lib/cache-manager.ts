@@ -249,9 +249,9 @@ class AdvancedCacheManager {
 
 // Create singleton instance
 export const cacheManager = new AdvancedCacheManager({
-  defaultTTL: 5 * 60 * 1000,  // 5 minutes
-  maxSize: 500,               // 500 entries max
-  cleanupInterval: 10 * 60 * 1000 // 10 minutes cleanup
+  defaultTTL: 10 * 60 * 1000,  // 10 minutes (increased from 5 minutes)
+  maxSize: 2000,               // 2000 entries max (increased from 500)
+  cleanupInterval: 5 * 60 * 1000 // 5 minutes cleanup (reduced from 10 for better memory management)
 });
 
 // Export cache manager class for custom instances

@@ -15,7 +15,10 @@ export async function GET() {
     "email": env.schema.organization.email,
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": env.schema.organization.address.split(',')[0] || "Jakarta",
+      "streetAddress": env.schema.organization.streetAddress,
+      "addressLocality": env.schema.organization.addressLocality,
+      "addressRegion": env.schema.organization.addressRegion,
+      "postalCode": env.schema.organization.postalCode,
       "addressCountry": "ID"
     },
     "sameAs": [
@@ -75,7 +78,10 @@ export async function GET() {
     "email": env.schema.organization.email,
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": env.schema.organization.address.split(',')[0] || "Jakarta",
+      "streetAddress": env.schema.organization.streetAddress,
+      "addressLocality": env.schema.organization.addressLocality,
+      "addressRegion": env.schema.organization.addressRegion,
+      "postalCode": env.schema.organization.postalCode,
       "addressCountry": "ID"
     },
     "openingHoursSpecification": {

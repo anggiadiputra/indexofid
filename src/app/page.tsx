@@ -37,9 +37,11 @@ export default async function HomePage() {
     },
     "address": {
       "@type": "PostalAddress",
-      "addressCountry": "ID",
-      "addressRegion": env.schema.organization.address.includes(',') ? env.schema.organization.address.split(',')[0].trim() : "Jakarta",
-      "addressLocality": env.schema.organization.address.includes(',') ? env.schema.organization.address.split(',')[0].trim() : "Jakarta"
+      "streetAddress": env.schema.organization.streetAddress,
+      "addressLocality": env.schema.organization.addressLocality,
+      "addressRegion": env.schema.organization.addressRegion,
+      "postalCode": env.schema.organization.postalCode,
+      "addressCountry": "ID"
     },
     "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin].filter(Boolean),
     "mainEntityOfPage": {
@@ -93,8 +95,11 @@ export default async function HomePage() {
     "telephone": env.schema.organization.phone,
     "address": {
       "@type": "PostalAddress",
-      "addressCountry": "ID",
-      "addressRegion": "Jakarta"
+      "streetAddress": env.schema.organization.streetAddress,
+      "addressLocality": env.schema.organization.addressLocality,
+      "addressRegion": env.schema.organization.addressRegion,
+      "postalCode": env.schema.organization.postalCode,
+      "addressCountry": "ID"
     },
     "geo": {
       "@type": "GeoCoordinates",

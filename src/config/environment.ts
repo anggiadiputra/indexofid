@@ -38,6 +38,10 @@ export const env = {
       defaultImage: process.env.NEXT_PUBLIC_DEFAULT_IMAGE || '/default-article-image.jpg',
       email: process.env.NEXT_PUBLIC_ORG_EMAIL || 'contact@yoursite.com',
       address: process.env.NEXT_PUBLIC_ORG_ADDRESS || 'Your City, Your Country',
+      streetAddress: process.env.NEXT_PUBLIC_ORG_STREET_ADDRESS || 'Jl. Sudirman No. 123',
+      addressLocality: process.env.NEXT_PUBLIC_ORG_LOCALITY || 'Jakarta Pusat',
+      addressRegion: process.env.NEXT_PUBLIC_ORG_REGION || 'DKI Jakarta',
+      postalCode: process.env.NEXT_PUBLIC_ORG_POSTAL_CODE || '10220',
       hours: process.env.NEXT_PUBLIC_ORG_HOURS || '24/7',
       // Schema.org specific URLs
       aboutUrl: process.env.NEXT_PUBLIC_ABOUT_URL || '/about',

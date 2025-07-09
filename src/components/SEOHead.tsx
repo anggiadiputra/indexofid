@@ -103,11 +103,19 @@ const SEOHead: React.FC<SEOHeadProps> = ({
           });
         }
       } catch (error) {
-        console.error('[SEOHead] ❌ Error fetching Rank Math data:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const isCorsError = errorMessage.includes('CORS') || errorMessage.includes('blocked');
+        
+        if (isCorsError) {
+          console.warn('[SEOHead] 🌐 CORS error detected, using fallback SEO generation:', errorMessage);
+        } else {
+          console.error('[SEOHead] ❌ Error fetching Rank Math data:', error);
+        }
+        
         setSeoState({
           loading: false,
           rankMathData: null,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: errorMessage,
           useFallback: fallbackEnabled,
         });
       }

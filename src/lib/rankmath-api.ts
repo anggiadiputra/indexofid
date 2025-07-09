@@ -48,7 +48,7 @@ export interface RankMathExtractedData {
 const config: RankMathConfig = {
   apiUrl: process.env.NEXT_PUBLIC_RANKMATH_API_URL || '',
   enabled: process.env.NEXT_PUBLIC_RANKMATH_API_ENABLED === 'true',
-  timeout: 5000, // 5 seconds timeout
+  timeout: 10000, // 10 seconds timeout
   cacheTime: 60 * 60 * 1000, // 1 hour cache
 };
 
@@ -106,9 +106,20 @@ class RankMathAPIService {
       console.log(`[RankMath] Fetching SEO data for ${fullUrl}`);
       console.log(`[RankMath] API URL: ${this.config.apiUrl}`);
       
-      // Build API request URL
-      const apiUrl = `${this.config.apiUrl}?url=${encodeURIComponent(fullUrl)}`;
-      console.log(`[RankMath] Full request URL: ${apiUrl}`);
+      // Determine if we're running on client or server
+      const isClient = typeof window !== 'undefined';
+      
+      let apiUrl: string;
+      
+      if (isClient) {
+        // Use internal API proxy route to avoid CORS issues
+        apiUrl = `/api/rankmath?url=${encodeURIComponent(fullUrl)}`;
+        console.log(`[RankMath] Using client-side proxy: ${apiUrl}`);
+      } else {
+        // Direct API call on server-side
+        apiUrl = `${this.config.apiUrl}?url=${encodeURIComponent(fullUrl)}`;
+        console.log(`[RankMath] Using server-side direct call: ${apiUrl}`);
+      }
       
       // Create AbortController for timeout
       const controller = new AbortController();
@@ -118,7 +129,7 @@ class RankMathAPIService {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'IndexOf-Headless/1.0',
+          'User-Agent': isClient ? 'IndexOf-Headless-Client/1.0' : 'IndexOf-Headless-Server/1.0',
         },
         signal: controller.signal,
       });

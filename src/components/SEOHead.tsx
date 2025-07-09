@@ -165,28 +165,32 @@ const SEOHead: React.FC<SEOHeadProps> = ({
         
         console.log('[SEOHead] ✅ Rank Math SEO injected into document head');
       } else if (seoState.useFallback) {
-        // Inject fallback schemas
-        const fallbackSchemas = generateFallbackSchemas({
-          post,
-          postCategories,
-          postTags,
-          featuredImageUrl,
-          customTitle,
-          customDescription,
-          pageType,
-        });
+        // Inject fallback schemas (async)
+        const injectFallbackSchemas = async () => {
+          const fallbackSchemas = await generateFallbackSchemas({
+            post,
+            postCategories,
+            postTags,
+            featuredImageUrl,
+            customTitle,
+            customDescription,
+            pageType,
+          });
 
-        console.log('[SEOHead] 📄 Injecting', fallbackSchemas.length, 'fallback schemas');
-        fallbackSchemas.forEach((schema, index) => {
-          const script = document.createElement('script');
-          script.type = 'application/ld+json';
-          script.textContent = JSON.stringify(schema);
-          script.setAttribute('data-fallback-seo', 'true');
-          script.setAttribute('data-schema-index', index.toString());
-          document.head.appendChild(script);
-        });
+          console.log('[SEOHead] 📄 Injecting', fallbackSchemas.length, 'fallback schemas');
+          fallbackSchemas.forEach((schema, index) => {
+            const script = document.createElement('script');
+            script.type = 'application/ld+json';
+            script.textContent = JSON.stringify(schema);
+            script.setAttribute('data-fallback-seo', 'true');
+            script.setAttribute('data-schema-index', index.toString());
+            document.head.appendChild(script);
+          });
+          
+          console.log('[SEOHead] ✅ Fallback SEO schemas injected into document head');
+        };
         
-        console.log('[SEOHead] ✅ Fallback SEO schemas injected into document head');
+        injectFallbackSchemas();
       } else {
         console.log('[SEOHead] ⚠️  No SEO data to inject');
       }
@@ -237,7 +241,7 @@ if (typeof window !== 'undefined') {
     },
     
     test: async (testUrl?: string) => {
-      const url = testUrl || 'https://backend.indexof.id/cara-import-database-mysql-mariadb/';
+      const url = testUrl || `${process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'https://your-wordpress-backend.com'}/sample-post/`;
       console.log('🧪 [RankMath Debug] Testing with URL:', url);
       
       try {
@@ -269,7 +273,7 @@ if (typeof window !== 'undefined') {
 
     // Enhanced debug function for deep analysis
     analyze: async (testUrl?: string) => {
-      const url = testUrl || 'https://backend.indexof.id/cara-import-database-mysql-mariadb/';
+      const url = testUrl || `${process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'https://your-wordpress-backend.com'}/sample-post/`;
       console.log('🔍 [RankMath Debug] Deep analysis for:', url);
       
       try {
@@ -346,7 +350,7 @@ if (typeof window !== 'undefined') {
 /**
  * Generate fallback schemas when Rank Math is not available
  */
-function generateFallbackSchemas({
+async function generateFallbackSchemas({
   post,
   postCategories,
   postTags,
@@ -362,7 +366,7 @@ function generateFallbackSchemas({
   customTitle?: string;
   customDescription?: string;
   pageType?: string;
-}): any[] {
+}): Promise<any[]> {
   const schemas: any[] = [];
 
   try {
@@ -381,13 +385,16 @@ function generateFallbackSchemas({
 
     // Generate page-specific schema
     if (post) {
-      // Article schema for posts
-      schemas.push(generateArticleSchema({
+      // Article schema for posts (now async)
+      const articleSchema = await generateArticleSchema({
         post,
         postCategories: postCategories || [],
         postTags: postTags || [],
         featuredImageUrl,
-      }));
+      });
+      if (articleSchema) {
+        schemas.push(articleSchema);
+      }
       
       // WebPage schema for posts
       schemas.push(generateWebPageSchema({

@@ -14,7 +14,7 @@ export function resolveRankMathUrl(post: { link?: string; slug: string }): strin
     return post.link;
   }
   
-  const backendUrl = env.wordpress.backendUrl || 'https://backend.indexof.id';
+  const backendUrl = env.wordpress.backendUrl || process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || process.env.WORDPRESS_BACKEND_URL || 'https://your-wordpress-backend.com';
   return `${backendUrl}/${post.slug}/`;
 }
 

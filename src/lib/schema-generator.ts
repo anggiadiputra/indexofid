@@ -1,5 +1,12 @@
+import type { 
+  WordPressPost, 
+  WordPressCategory, 
+  WordPressTag,
+  WordPressAuthor 
+} from '@/types/wordpress';
 import { env } from '@/config/environment';
-import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import { getAuthorById, getAuthorBySlug } from './wordpress-api';
+import { getRankMathSEO, extractRankMathSEOData } from './rankmath-api';
 
 interface SchemaGeneratorProps {
   post: WordPressPost | null;
@@ -12,9 +19,25 @@ interface SchemaGeneratorProps {
   pageType?: string;
 }
 
+// Enhanced author interface for schema generation
+interface EnhancedAuthorData extends WordPressAuthor {
+  socialLinks?: string[];
+  bio?: string;
+  expertise?: string[];
+  jobTitle?: string;
+  rankMathData?: any;
+}
+
 // Helper function to build absolute URLs
 function buildAbsoluteUrl(path: string): string {
-  const baseUrl = env.site.url.replace(/\/$/, ''); // Remove trailing slash
+  // Use configured site URL with proper fallback hierarchy
+  const baseUrl = (
+    env.site.url || 
+    env.wordpress.frontendDomain || 
+    process.env.NEXT_PUBLIC_SITE_URL || 
+    process.env.NEXT_PUBLIC_FRONTEND_DOMAIN ||
+    'http://localhost:3000'
+  ).replace(/\/$/, ''); // Remove trailing slash
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${baseUrl}${cleanPath}`;
 }
@@ -34,6 +57,168 @@ function getSocialUrls(): string[] {
   if (env.schema.social.twitter) socialUrls.push(env.schema.social.twitter);
   if (env.schema.social.linkedin) socialUrls.push(env.schema.social.linkedin);
   return socialUrls;
+}
+
+/**
+ * Enhanced author data fetching from multiple sources
+ * Priority: RankMath API > WordPress API > Embedded data > Fallback
+ */
+async function getEnhancedAuthorData(post: WordPressPost): Promise<EnhancedAuthorData | null> {
+  console.log('[Schema Debug] 🔍 Starting enhanced author data fetch...');
+  
+  // Step 1: Get embedded author data (fastest)
+  let authorData = post._embedded?.author?.[0];
+  
+  console.log('[Schema Debug] 📊 Embedded author data:', {
+    hasEmbedded: !!authorData,
+    authorId: authorData?.id,
+    authorName: authorData?.name,
+    authorSlug: authorData?.slug
+  });
+  
+  // Step 2: Fetch full author details from WordPress API if we have author ID
+  if (authorData?.id && typeof authorData.id === 'number') {
+    try {
+      console.log('[Schema Debug] 🌐 Fetching full author data from WordPress API...');
+      const fullAuthorData = await getAuthorById(authorData.id);
+      if (fullAuthorData) {
+        authorData = { ...authorData, ...fullAuthorData };
+        console.log('[Schema Debug] ✅ Enhanced author data from WordPress API');
+      }
+    } catch (error) {
+      console.warn('[Schema Debug] ⚠️ Failed to fetch full author data:', error);
+    }
+  }
+  
+  // Step 3: Try to get additional SEO data from RankMath API
+  if (post.link && env.rankmath.enabled) {
+    try {
+      console.log('[Schema Debug] 🎯 Fetching author data from RankMath API...');
+      const rankMathData = await getRankMathSEO(post.link);
+      if (rankMathData?.head) {
+        const extractedData = extractRankMathSEOData(rankMathData.head);
+        console.log('[Schema Debug] 📊 RankMath extracted data for author:', {
+          hasAuthorInfo: !!extractedData,
+          extractedTitle: extractedData.title,
+          extractedDescription: extractedData.description
+        });
+        
+        if (authorData) {
+          (authorData as EnhancedAuthorData).rankMathData = extractedData;
+        }
+      }
+    } catch (error) {
+      console.warn('[Schema Debug] ⚠️ Failed to fetch RankMath data for author:', error);
+    }
+  }
+  
+  // Step 4: Enhance author data with additional fields
+  if (authorData) {
+    const enhanced: EnhancedAuthorData = {
+      ...authorData,
+      bio: authorData.description || `Professional content writer at ${env.schema.business.name}`,
+      jobTitle: getAuthorJobTitle(authorData),
+      expertise: getAuthorExpertise(authorData, post),
+      socialLinks: getAuthorSocialLinks(authorData)
+    };
+    
+    console.log('[Schema Debug] ✅ Enhanced author data complete:', {
+      name: enhanced.name,
+      bio: enhanced.bio?.substring(0, 50) + '...',
+      jobTitle: enhanced.jobTitle,
+      expertise: enhanced.expertise?.join(', '),
+      hasSocialLinks: enhanced.socialLinks && enhanced.socialLinks.length > 0,
+      hasAvatar: !!enhanced.avatar_urls?.['96']
+    });
+    
+    return enhanced;
+  }
+  
+  console.log('[Schema Debug] ❌ No author data found, will use fallback');
+  return null;
+}
+
+/**
+ * Determine appropriate job title for author
+ */
+function getAuthorJobTitle(authorData: WordPressAuthor): string {
+  // Check if description contains job title keywords
+  const description = authorData.description?.toLowerCase() || '';
+  
+  if (description.includes('editor') || description.includes('chief')) {
+    return 'Editor';
+  } else if (description.includes('senior') || description.includes('lead')) {
+    return 'Senior Content Writer';
+  } else if (description.includes('technical') || description.includes('developer')) {
+    return 'Technical Writer';
+  } else if (description.includes('specialist') || description.includes('expert')) {
+    return 'Content Specialist';
+  }
+  
+  return 'Content Writer';
+}
+
+/**
+ * Extract author expertise from post content and categories
+ */
+function getAuthorExpertise(authorData: WordPressAuthor, post: WordPressPost): string[] {
+  const expertise: Set<string> = new Set();
+  
+  // Add expertise based on author description
+  const description = authorData.description?.toLowerCase() || '';
+  if (description.includes('wordpress')) expertise.add('WordPress');
+  if (description.includes('vps') || description.includes('server')) expertise.add('VPS Management');
+  if (description.includes('security') || description.includes('malware')) expertise.add('Web Security');
+  if (description.includes('migration')) expertise.add('Website Migration');
+  if (description.includes('hosting')) expertise.add('Web Hosting');
+  if (description.includes('seo')) expertise.add('SEO Optimization');
+  
+  // Add expertise based on post categories
+  if (post._embedded?.['wp:term']) {
+    post._embedded['wp:term'].forEach((termGroup: any) => {
+      if (Array.isArray(termGroup)) {
+        termGroup.forEach((term: any) => {
+          if (term.taxonomy === 'category') {
+            const categoryName = term.name?.toLowerCase() || '';
+            if (categoryName.includes('wordpress')) expertise.add('WordPress');
+            if (categoryName.includes('vps')) expertise.add('VPS Management');
+            if (categoryName.includes('security')) expertise.add('Web Security');
+            if (categoryName.includes('hosting')) expertise.add('Web Hosting');
+          }
+        });
+      }
+    });
+  }
+  
+  // Default expertise if none found
+  if (expertise.size === 0) {
+    expertise.add('WordPress');
+    expertise.add('Web Technology');
+  }
+  
+  return Array.from(expertise);
+}
+
+/**
+ * Extract social links for author
+ */
+function getAuthorSocialLinks(authorData: WordPressAuthor): string[] {
+  const socialLinks: string[] = [];
+  
+  // Add author's website if available
+  if (authorData.url && authorData.url !== '#' && !authorData.url.includes('localhost')) {
+    socialLinks.push(authorData.url);
+  }
+  
+  // Add author's WordPress profile link
+  if (authorData.link) {
+    socialLinks.push(authorData.link);
+  }
+  
+  // TODO: In future, can check author meta for social media links
+  // This would require additional WordPress API calls or custom fields
+  
+  return socialLinks;
 }
 
 export function generateBreadcrumbSchema({ post, postCategories, customBreadcrumbs }: SchemaGeneratorProps) {
@@ -147,7 +332,7 @@ export function generateBreadcrumbSchema({ post, postCategories, customBreadcrum
   };
 }
 
-export function generateArticleSchema({ post, postCategories, postTags, featuredImageUrl }: SchemaGeneratorProps) {
+export async function generateArticleSchema({ post, postCategories, postTags, featuredImageUrl }: SchemaGeneratorProps) {
   if (!post || !post.title?.rendered) {
     console.log('[Schema Debug] No post or title found:', { hasPost: !!post, hasTitle: !!post?.title?.rendered });
     return null; // Return null if no post is provided or title is missing
@@ -167,36 +352,39 @@ export function generateArticleSchema({ post, postCategories, postTags, featured
     businessEmail: env.schema.business.email
   });
   
-  // Enhanced author schema - check for real author data from WordPress
-  const authorData = post._embedded?.author?.[0];
-  console.log('[Schema Debug] Author data:', {
-    hasEmbedded: !!post._embedded,
-    hasAuthor: !!authorData,
-    authorName: authorData?.name,
-    authorSlug: authorData?.slug,
-    authorAvatar: authorData?.avatar_urls?.['96']
-  });
+  // Enhanced author schema using multiple data sources
+  console.log('[Schema Debug] 🚀 Starting enhanced author data extraction...');
+  const enhancedAuthorData = await getEnhancedAuthorData(post);
   
-  const authorSchema = authorData ? {
+  const authorSchema = enhancedAuthorData ? {
     "@type": "Person",
-    "@id": buildAbsoluteUrl(`/author/${authorData.slug}`),
-    "name": authorData.name,
-    "description": authorData.description || `Content writer at ${env.schema.business.name}`,
-    "url": authorData.link ? buildAbsoluteUrl(`/author/${authorData.slug}`) : buildAbsoluteUrl('/'),
-    "image": authorData.avatar_urls?.['96'] ? {
+    "@id": buildAbsoluteUrl(`/author/${enhancedAuthorData.slug}`),
+    "name": enhancedAuthorData.name,
+    "description": enhancedAuthorData.bio || enhancedAuthorData.description || `Content writer at ${env.schema.business.name}`,
+    "url": enhancedAuthorData.link ? buildAbsoluteUrl(`/author/${enhancedAuthorData.slug}`) : buildAbsoluteUrl('/'),
+    "image": enhancedAuthorData.avatar_urls?.['96'] ? {
       "@type": "ImageObject",
-      "url": authorData.avatar_urls['96'],
+      "url": enhancedAuthorData.avatar_urls['96'],
       "width": 96,
       "height": 96,
-      "caption": `${authorData.name} avatar`
+      "caption": `${enhancedAuthorData.name} avatar`
     } : undefined,
-    "jobTitle": "Content Writer",
+    "jobTitle": enhancedAuthorData.jobTitle || "Content Writer",
     "worksFor": {
       "@type": "Organization",
       "name": env.schema.business.name,
       "url": buildAbsoluteUrl('/')
     },
-    "sameAs": authorData.url ? [authorData.url] : []
+    "sameAs": enhancedAuthorData.socialLinks || [],
+    "knowsAbout": enhancedAuthorData.expertise || ["WordPress", "Web Technology"],
+    "hasOccupation": {
+      "@type": "Occupation",
+      "name": enhancedAuthorData.jobTitle || "Content Writer",
+      "occupationLocation": {
+        "@type": "Country",
+        "name": env.schema.locale.country
+      }
+    }
   } : {
     "@type": "Person",
     "name": env.site.author || `${env.schema.business.name} Editorial Team`,
@@ -207,6 +395,15 @@ export function generateArticleSchema({ post, postCategories, postTags, featured
       "@type": "Organization",
       "name": env.schema.business.name,
       "url": buildAbsoluteUrl('/')
+    },
+    "knowsAbout": ["WordPress", "VPS Management", "Web Security", "Web Technology"],
+    "hasOccupation": {
+      "@type": "Occupation",
+      "name": "Content Editor",
+      "occupationLocation": {
+        "@type": "Country",
+        "name": env.schema.locale.country
+      }
     }
   };
 

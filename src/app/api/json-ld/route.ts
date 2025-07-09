@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   // Determine base URL for schema
-  const baseUrl = env.site.url || env.wordpress.frontendDomain || 'https://www.indexof.id';
+  const baseUrl = env.site.url || env.wordpress.frontendDomain || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || 'http://localhost:3000';
   const cleanBaseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
   
   const organizationSchema = {

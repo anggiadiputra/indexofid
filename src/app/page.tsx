@@ -14,7 +14,7 @@ export default async function HomePage() {
   const { posts, popularPosts } = await getHomepageData();
 
   // Determine base URL for schema
-  const baseUrl = env.site.url || env.wordpress.frontendDomain || 'https://www.indexof.id';
+  const baseUrl = env.site.url || env.wordpress.frontendDomain || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || 'http://localhost:3000';
   const cleanBaseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
 
   // Enhanced Organization Schema - Fully Configurable from Environment

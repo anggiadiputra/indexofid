@@ -13,25 +13,50 @@ export async function GET(request: NextRequest) {
 
     // Get URL parameter from query string
     const { searchParams } = new URL(request.url);
-    const targetUrl = searchParams.get('url');
+    const frontendUrl = searchParams.get('url');
 
-    if (!targetUrl) {
+    if (!frontendUrl) {
       return NextResponse.json(
         { success: false, error: 'URL parameter is required' },
         { status: 400 }
       );
     }
 
-    console.log('[RankMath Proxy] Fetching SEO data for:', targetUrl);
+    // Transform frontend URL to backend URL for RankMath API
+    const frontendDomain = env.wordpress.frontendDomain || env.site.url || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const backendDomain = env.wordpress.backendUrl;
+    
+    // Remove trailing slashes and protocol for consistent comparison
+    const cleanFrontendDomain = frontendDomain.replace(/\/$/, '').replace(/^https?:\/\//, '');
+    const cleanBackendDomain = backendDomain.replace(/\/$/, '').replace(/^https?:\/\//, '');
+    
+    // Extract path from frontend URL
+    const frontendUrlObj = new URL(frontendUrl);
+    const path = frontendUrlObj.pathname + frontendUrlObj.search;
+    
+    // Construct backend URL
+    const backendUrl = `${backendDomain}${path}`;
+
+    console.log('[RankMath Proxy] URL transformation:', {
+      frontendUrl,
+      backendUrl,
+      frontendDomain: cleanFrontendDomain,
+      backendDomain: cleanBackendDomain,
+      path
+    });
+
+    console.log('[RankMath Proxy] Fetching SEO data for:', backendUrl);
     console.log('[RankMath Proxy] API URL:', env.rankmath.apiUrl);
     console.log('[RankMath Proxy] Environment check:', {
       enabled: env.rankmath.enabled,
       apiUrl: env.rankmath.apiUrl,
-      envApiUrl: process.env.NEXT_PUBLIC_RANKMATH_API_URL
+      envApiUrl: process.env.NEXT_PUBLIC_RANKMATH_API_URL,
+      frontendDomain: env.wordpress.frontendDomain,
+      backendDomain: env.wordpress.backendUrl
     });
 
     // Build the API request URL
-    const apiUrl = `${env.rankmath.apiUrl}?url=${encodeURIComponent(targetUrl)}`;
+    const apiUrl = `${env.rankmath.apiUrl}?url=${encodeURIComponent(backendUrl)}`;
     console.log('[RankMath Proxy] Full API request URL:', apiUrl);
     
     // Create AbortController for timeout
@@ -67,6 +92,17 @@ export async function GET(request: NextRequest) {
       hasHead: !!data.head,
       headLength: data.head ? data.head.length : 0
     });
+
+    // Transform any backend URLs in the response back to frontend URLs
+    if (data.head) {
+      // Replace all occurrences of backend domain with frontend domain
+      const backendDomainRegex = new RegExp(cleanBackendDomain.replace(/\./g, '\\.'), 'g');
+      data.head = data.head.replace(backendDomainRegex, cleanFrontendDomain);
+      
+      // Also handle protocol-less URLs (//domain.com)
+      const protocolLessBackendRegex = new RegExp(`//${cleanBackendDomain.replace(/\./g, '\\.')}`, 'g');
+      data.head = data.head.replace(protocolLessBackendRegex, `//${cleanFrontendDomain}`);
+    }
 
     // Return the data with CORS headers
     return NextResponse.json(data, {

@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { getAllPosts } from '@/lib/wordpress-api';
 import { WordPressPost } from '@/types/wordpress';
 import ClientsCarousel from '@/components/ClientsCarousel';
-import NewsletterSignup from '@/components/NewsletterSignup';
 import { getHomepageData } from '@/lib/wordpress-api';
 import { env } from '@/config/environment';
 
@@ -202,181 +201,377 @@ export default async function HomePage() {
         }}
       />
       
-      {/* Enhanced Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/20">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-32 w-96 h-96 bg-blue-100 dark:bg-blue-900/30 rounded-full blur-3xl opacity-70"></div>
-          <div className="absolute -bottom-40 -left-32 w-96 h-96 bg-indigo-100 dark:bg-indigo-900/30 rounded-full blur-3xl opacity-70"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-50 dark:bg-blue-800/20 rounded-full blur-2xl opacity-50"></div>
-        </div>
-
-        <div className="relative container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center px-6 py-3 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium mb-8 transform hover:scale-105 transition-transform duration-200">
-              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Platform Teknologi Terpercaya #1 di Indonesia
-            </div>
-
-            {/* Main Heading */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-gray-100 mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Solusi Digital
-              </span>
-              <br />
-              untuk Bisnis Modern
-            </h1>
-
-            {/* Description */}
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-4xl mx-auto leading-relaxed">
-              Maintenance WordPress profesional, migrasi website tanpa downtime, keamanan cyber terdepan, dan setup VPS optimal. 
-              <span className="font-semibold text-blue-600 dark:text-blue-400">Wujudkan website impian Anda bersama tim ahli IndexOf.ID!</span>
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <Link
-                href="/contact"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Konsultasi Gratis
-              </Link>
-              <Link
-                href="/services"
-                className="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-800 border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                Lihat Layanan
-              </Link>
-            </div>
-
-            {/* Stats Section */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto mb-16">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">500+</div>
-                <div className="text-sm md:text-base text-gray-600 dark:text-gray-300">Website Dikelola</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400 mb-2">99.9%</div>
-                <div className="text-sm md:text-base text-gray-600 dark:text-gray-300">Uptime Garantee</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">24/7</div>
-                <div className="text-sm md:text-base text-gray-600 dark:text-gray-300">Support Ready</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">5+</div>
-                <div className="text-sm md:text-base text-gray-600 dark:text-gray-300">Tahun Pengalaman</div>
+      {/* Hero Section - What's Included */}
+      <section className="relative overflow-hidden bg-gray-900 text-white">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                What&apos;s Included in 
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> IndexOf.ID</span>
+              </h1>
+              <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
+                IndexOf.ID adalah comprehensive platform teknologi yang mencakup semua yang Anda butuhkan untuk memulai proyek digital Anda. Apa yang termasuk dalam IndexOf.ID:
+              </p>
+              
+              {/* Feature List */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">15+ Pre-built services</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">99+ Google Pagespeed Score</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Built with Next.js and TailwindCSS for easy and customizable styling</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Fully responsive on all devices</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">SEO-optimized for better search engine rankings</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Professional service dan free consultation untuk use-case Anda</span>
+                </div>
               </div>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                SSL & Keamanan Terjamin
-              </div>
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Tim Bersertifikat
-              </div>
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Dokumentasi Lengkap
+            {/* Right Illustration */}
+            <div className="relative">
+              {/* Main Illustration Area */}
+              <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700">
+                {/* Workspace Illustration */}
+                <div className="text-center mb-8">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center">
+                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-sm text-gray-400">Professional Digital Workspace</div>
+                </div>
+
+                {/* Feature Icons Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-700 rounded-lg p-4 text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-blue-500 rounded">
+                      <svg className="w-8 h-8 p-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="text-xs text-gray-300">User Management</div>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-4 text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-green-500 rounded">
+                      <svg className="w-8 h-8 p-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div className="text-xs text-gray-300">Analytics</div>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-4 text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-purple-500 rounded">
+                      <div className="w-8 h-8 bg-purple-500 rounded flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                        <div className="w-1 h-1 bg-white rounded-full ml-1"></div>
+                        <div className="w-1 h-1 bg-white rounded-full ml-1"></div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-300">Dashboard</div>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-4 text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-orange-500 rounded">
+                      <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
+                        <div className="w-3 h-3 border-2 border-white rounded-full"></div>
+                        <div className="w-1 h-3 bg-white ml-1"></div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-300">Reports</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Overview Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      {/* Key Features Section */}
+      <section className="py-20 bg-white dark:bg-gray-50">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                Discover the Key Features Of IndexOf.ID
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                IndexOf.ID adalah all-in-one web platform untuk building modern dan content-focused websites. 
+                Platform kami menawarkan berbagai exciting features untuk developers dan website creators. 
+                Beberapa key features adalah:
+              </p>
+              
+              {/* Feature List */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-700">Zero JS, by default: No Javascript runtime overhead to slow you down.</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-700">Customizable Tailwind, MDX, and 100+ shortcode integrations to choose from.</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-700">18 pre-made: Support React, Preact, Svelte, Vue, Solid, Lit and more.</span>
+                </div>
+              </div>
+
+              <Link
+                href="/services"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
+              >
+                Get Started Now
+                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {/* Right Features Grid */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-gray-100 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Performance</h3>
+                <p className="text-sm text-gray-600">Optimized for speed</p>
+              </div>
+              
+              <div className="bg-gray-100 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">User Friendly</h3>
+                <p className="text-sm text-gray-600">Easy to use interface</p>
+              </div>
+              
+              <div className="bg-gray-100 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Fast Build</h3>
+                <p className="text-sm text-gray-600">Quick deployment</p>
+              </div>
+              
+              <div className="bg-gray-100 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Quality</h3>
+                <p className="text-sm text-gray-600">Premium standards</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Top Reasons Section */}
+      <section className="py-20 bg-gray-900 text-white">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Icons Grid */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-gray-800 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                  </svg>
+                </div>
+              </div>
+              
+              <div className="bg-gray-800 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-xl flex items-center justify-center">
+                  <div className="text-white text-2xl font-bold">=</div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-800 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-purple-600 rounded-xl flex items-center justify-center">
+                  <div className="w-6 h-6 bg-white rounded-full"></div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-800 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-orange-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Content */}
+            <div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                The Top Reasons to Choose IndexOf.ID for Your Project
+              </h2>
+              <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+                Dengan IndexOf.ID, Anda dapat build modern dan content focused websites tanpa 
+                sacrificing performance atau ease of use.
+              </p>
+              
+              {/* Feature List */}
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Instantly load static sites for better user experience and SEO</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Intuitive syntax and support for popular frameworks make learning and using IndexOf.ID a breeze</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Use any front-end library or framework, or build custom components, for any project size</span>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-300">Built on cutting-edge technology to keep your projects up-to-date with the latest web standards.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-white dark:bg-gray-50">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Layanan Unggulan Kami
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              What Users Are Saying About IndexOf.ID
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Dari maintenance hingga migrasi, kami memberikan solusi terbaik untuk semua kebutuhan WordPress Anda
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                             Don&apos;t just take our word for it - hear from some of our satisfied users! Check out some of 
+               our testimonials below to see what others are saying about IndexOf.ID.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <svg className="w-6 h-6 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">WordPress Maintenance</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">Update rutin, backup otomatis, dan monitoring keamanan 24/7 untuk website WordPress Anda</p>
+              <blockquote className="text-gray-700 mb-4">
+                "IndexOf.ID sangat membantu dalam proses maintenance website kami. Tim yang professional dan response time yang cepat membuat kami sangat puas dengan layanannya."
+              </blockquote>
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-blue-600 font-semibold">AM</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Ahmad Maulana</div>
+                  <div className="text-sm text-gray-500">CEO Startup</div>
+                </div>
+              </div>
             </div>
 
-            <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                <svg className="w-6 h-6 text-green-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Migrasi Website</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">Pindahkan website Anda tanpa downtime dengan proses migrasi yang aman dan terpercaya</p>
+              <blockquote className="text-gray-700 mb-4">
+                "Proses migrasi website kami dari hosting lama ke VPS baru berjalan sangat smooth tanpa downtime. Recommended banget untuk yang butuh jasa migrasi website!"
+              </blockquote>
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-green-600 font-semibold">SR</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Sari Rahayu</div>
+                  <div className="text-sm text-gray-500">E-commerce Owner</div>
+                </div>
+              </div>
             </div>
 
-            <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                <svg className="w-6 h-6 text-red-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Malware Removal</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">Pembersihan malware lengkap dan perlindungan keamanan untuk melindungi website Anda</p>
-            </div>
-
-            <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                <svg className="w-6 h-6 text-purple-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                </svg>
+              <blockquote className="text-gray-700 mb-4">
+                "Setelah website kami terkena malware, IndexOf.ID berhasil membersihkannya dengan sempurna dan memberikan proteksi keamanan yang lebih baik. Thank you!"
+              </blockquote>
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-purple-600 font-semibold">BS</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Budi Santoso</div>
+                  <div className="text-sm text-gray-500">Blogger Professional</div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">VPS Management</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">Setup, konfigurasi, dan pengelolaan VPS profesional untuk performa website optimal</p>
             </div>
           </div>
 
           <div className="text-center mt-12">
-            <Link
-              href="/services"
-              className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-            >
-              Lihat Semua Layanan
-              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+            <div className="flex justify-center space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Clients Carousel */}
       <ClientsCarousel />
-
-      {/* Newsletter Signup */}
-      <NewsletterSignup />
     </>
   );
 } 

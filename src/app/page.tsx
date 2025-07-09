@@ -46,7 +46,6 @@ export default async function HomePage() {
       "@type": "WebPage",
       "@id": env.site.url
     },
-    "publishingPrinciples": `${env.site.url}${env.schema.organization.editorialPolicy}`,
     "about": [
       {
         "@type": "Thing",
@@ -113,9 +112,6 @@ export default async function HomePage() {
       "@type": "Country",
       "name": env.schema.locale.country
     },
-    "publishingPrinciples": `${env.site.url}${env.schema.organization.editorialPolicy}`,
-    "ethicsPolicy": `${env.site.url}${env.schema.organization.ethicsPolicy}`,
-    "diversityPolicy": `${env.site.url}${env.schema.organization.diversityPolicy}`,
     "masthead": `${env.site.url}${env.schema.organization.aboutUrl}`,
     "aggregateRating": {
       "@type": "AggregateRating",

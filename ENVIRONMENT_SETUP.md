@@ -79,9 +79,7 @@ NEXT_PUBLIC_ORG_ADDRESS=Your City, Your Country
 NEXT_PUBLIC_ORG_HOURS=Monday - Friday: 09:00 - 17:00
 
 # Schema.org policy URLs
-NEXT_PUBLIC_EDITORIAL_POLICY_URL=/editorial-policy
-NEXT_PUBLIC_ETHICS_POLICY_URL=/ethics-policy
-NEXT_PUBLIC_DIVERSITY_POLICY_URL=/diversity-policy
+# Policy URLs removed - not needed for technical blog
 NEXT_PUBLIC_ABOUT_URL=/about
 ```
 

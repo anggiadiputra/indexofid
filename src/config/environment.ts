@@ -40,9 +40,6 @@ export const env = {
       address: process.env.NEXT_PUBLIC_ORG_ADDRESS || 'Your City, Your Country',
       hours: process.env.NEXT_PUBLIC_ORG_HOURS || '24/7',
       // Schema.org specific URLs
-      editorialPolicy: process.env.NEXT_PUBLIC_EDITORIAL_POLICY_URL || '/editorial-policy',
-      ethicsPolicy: process.env.NEXT_PUBLIC_ETHICS_POLICY_URL || '/ethics-policy',
-      diversityPolicy: process.env.NEXT_PUBLIC_DIVERSITY_POLICY_URL || '/diversity-policy',
       aboutUrl: process.env.NEXT_PUBLIC_ABOUT_URL || '/about',
     },
     social: {

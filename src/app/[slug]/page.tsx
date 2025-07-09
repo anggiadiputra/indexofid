@@ -142,14 +142,29 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     
     post = postResult.post;
     
-    [allCategories, allTags, featuredPosts] = await Promise.all([
-      getAllCategories(),
-      getAllTags(),
-      getAllPosts(1, 6) // Get featured posts for sidebar
-    ]);
+    // Try to load additional data with graceful fallbacks
+    try {
+      [allCategories, allTags, featuredPosts] = await Promise.all([
+        getAllCategories().catch(() => []),
+        getAllTags().catch(() => []),
+        getAllPosts(1, 6).catch(() => []) // Get featured posts for sidebar
+      ]);
+    } catch (err) {
+      console.warn('Failed to load additional data, using fallbacks:', err);
+      allCategories = [];
+      allTags = [];
+      featuredPosts = [];
+    }
   } catch (err) {
     console.error('Error fetching post:', err);
-    error = 'Failed to load post content';
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    
+    // Handle specific timeout/abort errors more gracefully
+    if (errorMessage.includes('aborted') || errorMessage.includes('AbortError')) {
+      error = 'Connection timeout - please try again later';
+    } else {
+      error = 'Failed to load post content';
+    }
   }
 
   if (!post || !post.title || !post.title.rendered || !post.excerpt || !post.excerpt.rendered) {

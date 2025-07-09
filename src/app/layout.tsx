@@ -295,7 +295,7 @@ export default function RootLayout({
                       </Link>
                     </li>
                     <li>
-                      <Link href="/tentang-kami" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
+                      <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
                         <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -303,23 +303,23 @@ export default function RootLayout({
                       </Link>
                     </li>
                     <li>
-                      <Link href="/portofolio" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
+                      <Link href="/services" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
                         <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                        Portofolio
+                        Layanan
                       </Link>
                     </li>
                     <li>
-                      <Link href="/testimoni" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
+                      <Link href="/domain" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
                         <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                        Testimoni
+                        Domain Checker
                       </Link>
                     </li>
                     <li>
-                      <Link href="/kontak" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
+                      <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
                         <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -327,27 +327,19 @@ export default function RootLayout({
                       </Link>
                     </li>
                     <li>
-                      <Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
+                      <Link href="/search" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
                         <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                        FAQ
+                        Pencarian
                       </Link>
                     </li>
                     <li>
-                      <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
+                      <Link href="/tags" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
                         <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                        Privacy Policy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center">
-                        <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        Terms of Service
+                        Tag Artikel
                       </Link>
                     </li>
                   </ul>

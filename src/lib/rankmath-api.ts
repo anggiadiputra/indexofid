@@ -141,8 +141,20 @@ class RankMathAPIService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`[RankMath] HTTP error! status: ${response.status}, body: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        
+        // Handle different HTTP status codes more gracefully
+        if (response.status === 404) {
+          console.log(`[RankMath] Page not found (404) for ${fullUrl}. Using fallback SEO generation.`);
+        } else if (response.status === 403) {
+          console.warn(`[RankMath] Access forbidden (403) for ${fullUrl}. Check API permissions.`);
+        } else if (response.status >= 500) {
+          console.error(`[RankMath] Server error (${response.status}) for ${fullUrl}. Server may be temporarily unavailable.`);
+        } else {
+          console.warn(`[RankMath] HTTP error ${response.status} for ${fullUrl}: ${errorText}`);
+        }
+        
+        // Return null instead of throwing error for non-critical failures
+        return null;
       }
 
       const data = await response.json() as RankMathSEOData;
@@ -177,9 +189,9 @@ class RankMathAPIService {
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          console.error(`[RankMath] Request timeout for ${fullUrl}`);
+          console.warn(`[RankMath] Request timeout for ${fullUrl}. Using fallback SEO generation.`);
         } else {
-          console.error(`[RankMath] API error for ${fullUrl}:`, error.message);
+          console.log(`[RankMath] API unavailable for ${fullUrl}. Using fallback SEO generation.`);
         }
       }
       return null;

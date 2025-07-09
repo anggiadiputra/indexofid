@@ -107,17 +107,20 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const isCorsError = errorMessage.includes('CORS') || errorMessage.includes('blocked');
+        const is404Error = errorMessage.includes('404') || errorMessage.includes('not found');
         
-        if (isCorsError) {
+        if (is404Error) {
+          console.log('[SEOHead] 📝 Page not found in RankMath API, using fallback SEO generation for:', url);
+        } else if (isCorsError) {
           console.warn('[SEOHead] 🌐 CORS error detected, using fallback SEO generation:', errorMessage);
         } else {
-          console.error('[SEOHead] ❌ Error fetching Rank Math data:', error);
+          console.warn('[SEOHead] ⚠️  RankMath API unavailable, using fallback SEO generation:', errorMessage);
         }
         
         setSeoState({
           loading: false,
           rankMathData: null,
-          error: errorMessage,
+          error: is404Error ? 'Page not found in RankMath' : errorMessage,
           useFallback: fallbackEnabled,
         });
       }

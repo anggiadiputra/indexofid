@@ -92,7 +92,7 @@ async function fetchWithCache<T>(
   cacheKey: string, 
   cacheTTL: number = CACHE_TTL.POSTS_LIST,  // Use optimized default
   useBrowserCache: boolean = true,  // Enable browser cache by default
-  retries: number = 4  // Increased retry count for better resilience
+  retries: number = 2  // Reduced retry count to avoid long waits
 ): Promise<T> {
   // Try server cache first (fastest)
   const serverCached = serverCache.get<T>(cacheKey);
@@ -123,7 +123,7 @@ async function fetchWithCache<T>(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       const response = await fetch(url, {
         headers: {
@@ -239,6 +239,8 @@ async function fetchWithCache<T>(
         errorMessage.includes('socket') ||
         errorMessage.includes('ECONNRESET') ||
         errorMessage.includes('other side closed') ||
+        errorMessage.includes('aborted') ||
+        errorMessage.includes('AbortError') ||
         errorCode === 'UND_ERR_SOCKET'
       )) {
         const delay = Math.pow(2, attempt) * 1000;

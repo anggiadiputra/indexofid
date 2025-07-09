@@ -662,7 +662,7 @@ class RankMathAPIService {
   }
 
   /**
-   * Normalize URL to full URL
+   * Normalize URL to full URL - always use WordPress backend URL for RankMath API
    */
   private normalizeUrl(url: string): string {
     // If URL is already absolute, return as is
@@ -670,13 +670,26 @@ class RankMathAPIService {
       return url;
     }
 
-    // Get base URL from environment
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'http://localhost:3000';
+    // For RankMath API, we MUST use WordPress backend URL
+    const baseUrl = env.wordpress.backendUrl || 
+                   process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 
+                   process.env.WORDPRESS_BACKEND_URL || 
+                   'https://backend.indexof.id';
+    
+    console.log('[RankMath] normalizeUrl debug:', {
+      inputUrl: url,
+      backendUrl: baseUrl,
+      envBackendUrl: env.wordpress.backendUrl,
+      envPublicBackendUrl: process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL,
+      envBackendUrl2: process.env.WORDPRESS_BACKEND_URL
+    });
     
     // Ensure URL starts with /
     const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+    const fullUrl = `${baseUrl}${normalizedPath}`;
     
-    return `${baseUrl}${normalizedPath}`;
+    console.log('[RankMath] URL normalized from', url, 'to', fullUrl);
+    return fullUrl;
   }
 
   /**

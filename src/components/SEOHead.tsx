@@ -63,6 +63,13 @@ const SEOHead: React.FC<SEOHeadProps> = ({
     const fetchSEOData = async () => {
       try {
         console.log('[SEOHead] 🚀 Starting SEO data fetch for URL:', url);
+        console.log('[SEOHead] 🔍 URL analysis:', {
+          inputUrl: url,
+          isAbsolute: url.startsWith('http'),
+          isFrontendUrl: url.includes('www.indexof.id') || url.includes('indexof.id'),
+          isBackendUrl: url.includes('backend.indexof.id'),
+          shouldTransform: !url.includes('backend.indexof.id') && !url.startsWith('/')
+        });
         setSeoState(prev => ({ ...prev, loading: true, error: null }));
         
         const rankMathData = await getRankMathSEO(url);

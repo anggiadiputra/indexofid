@@ -24,9 +24,15 @@ export async function GET(request: NextRequest) {
 
     console.log('[RankMath Proxy] Fetching SEO data for:', targetUrl);
     console.log('[RankMath Proxy] API URL:', env.rankmath.apiUrl);
+    console.log('[RankMath Proxy] Environment check:', {
+      enabled: env.rankmath.enabled,
+      apiUrl: env.rankmath.apiUrl,
+      envApiUrl: process.env.NEXT_PUBLIC_RANKMATH_API_URL
+    });
 
     // Build the API request URL
     const apiUrl = `${env.rankmath.apiUrl}?url=${encodeURIComponent(targetUrl)}`;
+    console.log('[RankMath Proxy] Full API request URL:', apiUrl);
     
     // Create AbortController for timeout
     const controller = new AbortController();

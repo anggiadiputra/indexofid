@@ -13,28 +13,48 @@ export default async function HomePage() {
   // Use parallel data fetching for optimal TTFB
   const { posts, popularPosts } = await getHomepageData();
 
-  // Comprehensive Schema.org markup for WordPress Maintenance Services
+  // Enhanced Organization Schema for Tech News/Tutorial Platform
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "Organization", 
-    "name": `${env.schema.organization.name} - ${env.site.description}`,
-    "alternateName": env.schema.organization.name,
+    "@type": "Organization",
+    "@id": `${env.site.url}/#organization`,
+    "name": env.schema.organization.name,
+    "alternateName": "IndexOf ID",
     "url": env.site.url,
-    "logo": `${env.site.url}${env.site.logo}`,
+    "logo": {
+      "@type": "ImageObject",
+      "@id": `${env.site.url}${env.site.logo}`,
+      "url": `${env.site.url}${env.site.logo}`,
+      "caption": `${env.schema.organization.name} Logo`
+    },
+    "image": `${env.site.url}${env.site.logo}`,
     "description": env.schema.organization.description,
-    "foundingDate": "2020",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": env.schema.organization.phone,
-      "contactType": "customer service",
-      "availableLanguage": ["Indonesian", "English"],
-      "hoursAvailable": {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        "opens": "00:00",
-        "closes": "23:59"
+    "slogan": "Panduan Teknologi Terpercaya Indonesia",
+    "foundingDate": "2020-01-01",
+    "foundingLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Jakarta",
+        "addressCountry": "ID"
       }
     },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "@id": `${env.site.url}/#contact`,
+        "telephone": env.schema.organization.phone,
+        "email": env.schema.organization.email,
+        "contactType": "customer service",
+        "availableLanguage": ["id", "en"],
+        "hoursAvailable": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "00:00",
+          "closes": "23:59"
+        }
+      }
+    ],
     "address": {
       "@type": "PostalAddress",
       "streetAddress": env.schema.organization.streetAddress,
@@ -43,29 +63,49 @@ export default async function HomePage() {
       "postalCode": env.schema.organization.postalCode,
       "addressCountry": "ID"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -6.2088,
+      "longitude": 106.8456
+    },
     "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin].filter(Boolean),
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": env.site.url
     },
-    "about": [
-      {
-        "@type": "Thing",
-        "name": "Teknologi"
-      },
-      {
-        "@type": "Thing", 
-        "name": "Berita"
-      },
-      {
-        "@type": "Thing",
-        "name": "Tutorial"
-      },
-      {
-        "@type": "Thing",
-        "name": "Indonesia"
-      }
-    ]
+    "knowsAbout": [
+      "WordPress Development",
+      "VPS Management", 
+      "Web Hosting",
+      "Domain Registration",
+      "Website Security",
+      "Performance Optimization",
+      "Indonesian Technology News",
+      "Web Development Tutorials"
+    ],
+    "expertise": [
+      "WordPress",
+      "VPS",
+      "Web Hosting",
+      "Domain Management",
+      "Web Security"
+    ],
+    "areaServed": {
+      "@type": "Country",
+      "name": "Indonesia"
+    },
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Developers, Business Owners, Tech Enthusiasts"
+    },
+    "brand": {
+      "@type": "Brand",
+      "name": env.schema.organization.name,
+      "logo": `${env.site.url}${env.site.logo}`
+    },
+    "parentOrganization": null,
+    "subOrganization": [],
+    "member": []
   };
 
   const websiteSchema = {
@@ -85,14 +125,25 @@ export default async function HomePage() {
     }
   };
 
-  const localBusinessSchema = {
+  const newsMediaSchema = {
     "@context": "https://schema.org",
     "@type": "NewsMediaOrganization",
+    "@id": `${env.site.url}/#newsmedia`,
     "name": env.schema.organization.name,
-    "image": `${env.site.url}${env.site.logo}`,
-    "description": env.schema.organization.description,
+    "alternateName": "IndexOf ID News",
     "url": env.site.url,
-    "telephone": env.schema.organization.phone,
+    "logo": `${env.site.url}${env.site.logo}`,
+    "image": `${env.site.url}${env.site.logo}`,
+    "description": "Platform berita teknologi dan tutorial terpercaya di Indonesia",
+    "slogan": "Berita Teknologi Terdepan Indonesia",
+    "foundingDate": "2020-01-01",
+    "inLanguage": ["id", "en"],
+    "publishingPrinciples": `${env.site.url}${env.schema.organization.aboutUrl}`,
+    "masthead": `${env.site.url}${env.schema.organization.aboutUrl}`,
+    "missionCoveragePrioritiesPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
+    "unnamedSourcesPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
+    "actionableFeedbackPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
+    "correctionsPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": env.schema.organization.streetAddress,
@@ -101,29 +152,29 @@ export default async function HomePage() {
       "postalCode": env.schema.organization.postalCode,
       "addressCountry": "ID"
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": -6.2088,
-      "longitude": 106.8456
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": env.schema.organization.phone,
+      "email": env.schema.organization.email,
+      "contactType": "editorial office"
     },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      "opens": "00:00",
-      "closes": "23:59"
-    },
-    "serviceType": "Digital Media and News Publishing",
     "areaServed": {
       "@type": "Country",
-      "name": env.schema.locale.country
+      "name": "Indonesia"
     },
-    "masthead": `${env.site.url}${env.schema.organization.aboutUrl}`,
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "5.0",
-      "reviewCount": "100",
-      "bestRating": "5",
-      "worstRating": "1"
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Technology professionals, developers, business owners in Indonesia"
+    },
+    "knowsAbout": [
+      "Technology News",
+      "WordPress Updates", 
+      "VPS Technology",
+      "Web Development",
+      "Indonesian Tech Industry"
+    ],
+    "parentOrganization": {
+      "@id": `${env.site.url}/#organization`
     }
   };
 
@@ -145,7 +196,7 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(localBusinessSchema)
+          __html: JSON.stringify(newsMediaSchema)
         }}
       />
       

@@ -4,8 +4,11 @@ import Link from 'next/link';
 // ISR configuration for services page (static content, revalidate less frequently)
 export const revalidate = 86400; // Revalidate every 24 hours
 
+<<<<<<< HEAD
 import { env } from '@/config/environment';
 
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 export const metadata: Metadata = {
   title: `Layanan WordPress Profesional | ${env.schema.organization.name}`,
   description: 'Solusi lengkap untuk website WordPress Anda: Jasa Migrasi, Pembersihan Malware, Setup VPS, dan Pengelolaan VPS dengan dukungan teknis profesional.',

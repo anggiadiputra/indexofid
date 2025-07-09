@@ -12,9 +12,13 @@ import {
   generateOrganizationSchema, 
   generateWebPageSchema 
 } from '@/lib/schema-generator';
+<<<<<<< HEAD
 import SEOHead, { getServerSideRankMathSEO } from '@/components/SEOHead';
 import { env } from '@/config/environment';
 import { resolveRankMathUrl, resolveFrontendUrl, findPostBySlugVariations } from '@/lib/url-resolver';
+=======
+import { env } from '@/config/environment';
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 import dynamic from 'next/dynamic';
 
 // Dynamic imports for non-critical components
@@ -48,8 +52,11 @@ const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
   ssr: true
 });
+<<<<<<< HEAD
 
 // SEOHead will be imported and used normally since it's a client component
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;

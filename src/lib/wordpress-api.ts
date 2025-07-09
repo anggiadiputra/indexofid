@@ -92,7 +92,11 @@ async function fetchWithCache<T>(
   cacheKey: string, 
   cacheTTL: number = CACHE_TTL.POSTS_LIST,  // Use optimized default
   useBrowserCache: boolean = true,  // Enable browser cache by default
+<<<<<<< HEAD
   retries: number = 4  // Increased retry count for better resilience
+=======
+  retries: number = 2  // Add retry capability
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 ): Promise<T> {
   // Try server cache first (fastest)
   const serverCached = serverCache.get<T>(cacheKey);
@@ -122,21 +126,30 @@ async function fetchWithCache<T>(
   // Fetch with retry logic
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+<<<<<<< HEAD
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
       const response = await fetch(url, {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'NextJS-App/1.0',
         },
+<<<<<<< HEAD
         signal: controller.signal,
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
         next: { 
           revalidate: Math.min(cacheTTL / 1000, 86400) // Dynamic revalidation based on cache TTL, max 24 hours
         }
       });
+<<<<<<< HEAD
       
       clearTimeout(timeoutId);
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 
       if (!response.ok) {
         // For 400 errors on list endpoints, it's often an invalid page number.
@@ -170,6 +183,7 @@ async function fetchWithCache<T>(
         );
       }
 
+<<<<<<< HEAD
       // Check if response is actually JSON before parsing
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -244,6 +258,24 @@ async function fetchWithCache<T>(
         const delay = Math.pow(2, attempt) * 1000;
         console.log(`[WordPress API] Network error, retrying after ${delay}ms (attempt ${attempt + 1}/${retries + 1})`);
         console.log(`[WordPress API] Error details:`, errorMessage);
+=======
+      const data = await response.json();
+
+      // Cache the response
+      cache.set(cacheKey, data, cacheTTL);
+      serverCache.set(cacheKey, data, cacheTTL);
+      
+      // Enhanced browser cache integration with null safety
+      if (useBrowserCache && typeof window !== 'undefined' && enhancedBrowserCache) {
+        enhancedBrowserCache.set(cacheKey, data, cacheTTL);
+      }
+
+      return data;
+    } catch (error) {
+      if (attempt < retries && (error instanceof TypeError || (error as Error).message?.includes('fetch'))) {
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`[WordPress API] Network error, retrying after ${delay}ms (attempt ${attempt + 1}/${retries + 1})`);
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -295,6 +327,7 @@ export async function getAllPosts(
   const url = `${API_BASE}/posts?${params.toString()}`;
   const cacheKey = `posts_${page}_${perPage}_${categoryId || ''}_${tagId || ''}_${search || ''}`;
 
+<<<<<<< HEAD
   try {
     const posts = await fetchWithCache<WordPressPost[]>(
       url, 
@@ -315,6 +348,27 @@ export async function getAllPosts(
       
       return processedPost;
     });
+=======
+  const posts = await fetchWithCache<WordPressPost[]>(
+    url, 
+    cacheKey, 
+    CACHE_TTL.POSTS_LIST,
+    true // Use browser cache
+  );
+
+  // Parse content to blocks and cache individual posts
+  const processedPosts = posts.map(post => {
+    const processedPost = {
+      ...post,
+      blocks: parseContentToBlocks(post.content.rendered),
+    };
+    
+    // Cache individual posts
+    cacheManager.cachePost(processedPost, CACHE_TTL.SINGLE_POST);
+    
+    return processedPost;
+  });
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 
     return processedPosts;
   } catch (error) {
@@ -407,6 +461,7 @@ export async function getPostBySlug(slug: string): Promise<WordPressPost | null>
     return post;
   } catch (error) {
     console.error(`[getPostBySlug] Error fetching post with slug ${slug}:`, error);
+<<<<<<< HEAD
     
     // Try fallback API if different from primary
     if (FALLBACK_API_BASE && FALLBACK_API_BASE !== API_BASE) {
@@ -444,6 +499,43 @@ export async function getPostBySlug(slug: string): Promise<WordPressPost | null>
       } catch (fallbackError) {
         console.error(`[getPostBySlug] Fallback request also failed for slug ${slug}:`, fallbackError);
       }
+=======
+    // Try alternative API URL as fallback
+    try {
+      const alternativeUrl = `https://www.jasakami.id/wp-json/wp/v2/posts?slug=${slug}&_embed=true`;
+      console.log(`[getPostBySlug] Trying alternative URL: ${alternativeUrl}`);
+      
+      const response = await fetch(alternativeUrl, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'NextJS-App/1.0',
+        },
+        next: { revalidate: 86400 }
+      });
+      
+      if (!response.ok) {
+        console.error(`[getPostBySlug] Alternative request failed: ${response.status}`);
+        return null;
+      }
+      
+      const posts = await response.json();
+      if (!posts.length) {
+        console.warn(`[getPostBySlug] No posts found in alternative request for slug: ${slug}`);
+        return null;
+      }
+      
+      const post = {
+        ...posts[0],
+        blocks: parseContentToBlocks(posts[0].content.rendered),
+      };
+      
+      // Cache the result
+      cacheManager.cachePost(post, CACHE_TTL.SINGLE_POST);
+      return post;
+    } catch (fallbackError) {
+      console.error(`[getPostBySlug] Fallback request also failed for slug ${slug}:`, fallbackError);
+      return null;
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
     }
     
     return null;

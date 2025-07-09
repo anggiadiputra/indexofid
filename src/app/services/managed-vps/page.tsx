@@ -5,8 +5,11 @@ import Image from 'next/image';
 // ISR configuration for service pages (static content, revalidate less frequently)
 export const revalidate = 86400; // Revalidate every 24 hours
 
+<<<<<<< HEAD
 import { env } from '@/config/environment';
 
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 export const metadata: Metadata = {
   title: `Jasa Kelola (Manage) VPS WordPress | ${env.schema.organization.name}`,
   description: 'Layanan pengelolaan VPS WordPress profesional. Fokus pada bisnis Anda, biarkan kami yang mengelola server, keamanan, dan performa.',

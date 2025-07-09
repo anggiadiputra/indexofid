@@ -5,8 +5,11 @@ import Link from 'next/link';
 // ISR configuration for service pages (static content, revalidate less frequently)
 export const revalidate = 86400; // Revalidate every 24 hours
 
+<<<<<<< HEAD
 import { env } from '@/config/environment';
 
+=======
+>>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 export const metadata: Metadata = {
   title: `Jasa Setup VPS WordPress | ${env.schema.organization.name}`,
   description: 'Layanan konfigurasi VPS khusus WordPress. Optimalkan performa dan keamanan website dengan setup server yang tepat, cepat, dan aman.',

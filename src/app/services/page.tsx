@@ -7,7 +7,7 @@ export const revalidate = 86400; // Revalidate every 24 hours
 import { env } from '@/config/environment';
 
 export const metadata: Metadata = {
-  title: `Layanan WordPress Profesional | ${env.schema.organization.name}`,
+  title: `Layanan WordPress Profesional | ${env.schema.business.name}`,
   description: 'Solusi lengkap untuk website WordPress Anda: Jasa Migrasi, Pembersihan Malware, Setup VPS, dan Pengelolaan VPS dengan dukungan teknis profesional.',
 };
 
@@ -80,7 +80,7 @@ export default function ServicesPage() {
       {/* Why Choose Us */}
       <div className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-10">
-                      Kenapa Harus {env.schema.organization.name}?
+                      Kenapa Harus {env.schema.business.name}?
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[

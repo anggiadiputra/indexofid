@@ -19,7 +19,7 @@ const clients: Client[] = [
     name: 'TechCorp', 
     logo: '🏢',
     industry: 'Technology',
-    testimonial: `Tim ${env.schema.organization.name} sangat profesional dalam menyediakan berita dan informasi teknologi terkini. Kontennya selalu update dan berkualitas.`,
+          testimonial: `Tim ${env.schema.business.name} sangat profesional dalam menyediakan berita dan informasi teknologi terkini. Kontennya selalu update dan berkualitas.`,
     rating: 5.0,
     gradient: 'from-blue-500 to-blue-600' 
   },

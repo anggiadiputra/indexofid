@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
     const description = tag.description || `Semua artikel dengan tag ${tagName}`;
 
     return {
-      title: `Tag: ${tagName} | ${env.schema.organization.name} Blog`,
-      description: `${description} - Temukan artikel terkait ${tagName} di blog ${env.schema.organization.name}`,
+          title: `Tag: ${tagName} | ${env.schema.business.name} Blog`,
+    description: `${description} - Temukan artikel terkait ${tagName} di blog ${env.schema.business.name}`,
       openGraph: {
         title: `Tag: ${tagName}`,
         description: description,

@@ -107,36 +107,94 @@ export function generateArticleSchema({ post, postCategories, postTags, featured
     return null; // Return null if no post is provided or title is missing
   }
 
-  const defaultImage = buildImageUrl(env.schema.organization.defaultImage);
-  const logoUrl = buildImageUrl(env.schema.organization.logo);
+  const defaultImage = buildImageUrl(env.schema.business.defaultImage);
+  const logoUrl = buildImageUrl(env.schema.business.logo);
+  
+  // Enhanced author schema - check for real author data from WordPress
+  const authorData = post._embedded?.author?.[0];
+  const authorSchema = authorData ? {
+    "@type": "Person",
+    "@id": buildAbsoluteUrl(`/author/${authorData.slug}`),
+    "name": authorData.name,
+    "description": authorData.description || `Content writer at ${env.schema.business.name}`,
+    "url": authorData.link ? buildAbsoluteUrl(`/author/${authorData.slug}`) : buildAbsoluteUrl('/'),
+    "image": authorData.avatar_urls?.['96'] ? {
+      "@type": "ImageObject",
+      "url": authorData.avatar_urls['96'],
+      "width": 96,
+      "height": 96,
+      "caption": `${authorData.name} avatar`
+    } : undefined,
+    "jobTitle": "Content Writer",
+    "worksFor": {
+      "@type": "Organization",
+      "name": env.schema.business.name,
+      "url": buildAbsoluteUrl('/')
+    },
+    "sameAs": authorData.url ? [authorData.url] : []
+  } : {
+    "@type": "Person",
+    "name": env.site.author || `${env.schema.business.name} Editorial Team`,
+    "description": `Professional content team at ${env.schema.business.name} specializing in WordPress and web technology`,
+    "url": buildAbsoluteUrl('/'),
+    "jobTitle": "Content Editor", 
+    "worksFor": {
+      "@type": "Organization",
+      "name": env.schema.business.name,
+      "url": buildAbsoluteUrl('/')
+    }
+  };
+
+  // Enhanced image schema with proper ImageObject structure
+  const primaryImage = featuredImageUrl || defaultImage;
+  const imageSchema = {
+    "@type": "ImageObject",
+    "@id": `${buildAbsoluteUrl(`/${post.slug}`)}#primaryimage`,
+    "url": primaryImage,
+    "width": featuredImageUrl ? 1200 : 800,
+    "height": featuredImageUrl ? 630 : 600,
+    "caption": post.title.rendered.replace(/<[^>]*>/g, ''),
+    "contentUrl": primaryImage,
+    "thumbnail": {
+      "@type": "ImageObject",
+      "url": primaryImage,
+      "width": 300,
+      "height": 200
+    }
+  };
+
+  // Enhanced publisher schema
+  const publisherSchema = {
+    "@type": "Organization",
+    "@id": buildAbsoluteUrl('/#organization'),
+    "name": env.schema.business.name,
+    "logo": {
+      "@type": "ImageObject",
+      "@id": buildAbsoluteUrl('/#logo'),
+      "url": logoUrl,
+      "width": 300,
+      "height": 60,
+      "caption": `${env.schema.business.name} Logo`
+    },
+    "url": buildAbsoluteUrl('/'),
+    "sameAs": getSocialUrls(),
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": env.schema.business.phone,
+      "email": env.schema.business.email,
+      "contactType": "customer service"
+    }
+  };
   
   return {
     "@context": "https://schema.org",
     "@type": "Article",
+    "@id": buildAbsoluteUrl(`/${post.slug}#article`),
     "headline": post.title.rendered.replace(/<[^>]*>/g, ''),
     "description": post.excerpt?.rendered ? post.excerpt.rendered.replace(/<[^>]*>/g, '').substring(0, 160) : `Read ${post.title.rendered.replace(/<[^>]*>/g, '')} on our blog`,
-    "image": featuredImageUrl ? [featuredImageUrl] : [defaultImage],
-    "author": {
-      "@type": "Organization",
-      "name": `${env.schema.organization.name} Team`,
-      "url": buildAbsoluteUrl('/'),
-      "logo": {
-        "@type": "ImageObject",
-        "url": logoUrl
-      }
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": env.schema.organization.name,
-      "logo": {
-        "@type": "ImageObject",
-        "url": logoUrl,
-        "width": 300,
-        "height": 60
-      },
-      "url": buildAbsoluteUrl('/'),
-      "sameAs": getSocialUrls()
-    },
+    "image": [imageSchema],
+    "author": authorSchema,
+    "publisher": publisherSchema,
     "datePublished": post.date,
     "dateModified": post.modified,
     "mainEntityOfPage": {
@@ -145,26 +203,37 @@ export function generateArticleSchema({ post, postCategories, postTags, featured
     },
     "url": buildAbsoluteUrl(`/${post.slug}`),
     "inLanguage": env.schema.locale.language,
-    "articleSection": postCategories.length > 0 ? postCategories[0].name.replace(/<[^>]*>/g, '') : "Blog",
+    "articleSection": postCategories.length > 0 ? postCategories[0].name.replace(/<[^>]*>/g, '') : "Technology",
     "keywords": postTags.map(tag => tag.name.replace(/<[^>]*>/g, '')).join(', '),
+    "wordCount": post.content?.rendered ? post.content.rendered.replace(/<[^>]*>/g, '').split(/\s+/).length : undefined,
+    "timeRequired": post.content?.rendered ? `PT${Math.max(2, Math.ceil(post.content.rendered.replace(/<[^>]*>/g, '').split(/\s+/).length / 200))}M` : "PT3M",
     "about": {
       "@type": "Thing",
-      "name": "WordPress Maintenance Services",
-      "description": "Professional WordPress maintenance, migration, malware removal, and VPS management services"
+      "name": postCategories.length > 0 ? postCategories[0].name.replace(/<[^>]*>/g, '') : "WordPress Technology",
+      "description": "Professional WordPress and web technology services"
     },
     "mentions": env.schema.services.primary.map(service => ({
       "@type": "Service",
       "name": service,
       "provider": {
         "@type": "Organization",
-        "name": env.schema.organization.name
+        "name": env.schema.business.name,
+        "@id": buildAbsoluteUrl('/#organization')
       }
     })),
     "isPartOf": {
       "@type": "Blog",
-      "name": `${env.schema.organization.name} Blog`,
+      "@id": buildAbsoluteUrl('/blog#blog'),
+      "name": `${env.schema.business.name} Blog`,
       "url": buildAbsoluteUrl('/blog'),
-      "description": env.site.description
+      "description": env.site.description || "Expert insights on WordPress, VPS, and web technology",
+      "publisher": {
+        "@id": buildAbsoluteUrl('/#organization')
+      }
+    },
+    "potentialAction": {
+      "@type": "ReadAction",
+      "target": buildAbsoluteUrl(`/${post.slug}`)
     }
   };
 }
@@ -173,13 +242,13 @@ export function generateOrganizationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": env.schema.organization.name,
+    "name": env.schema.business.name,
     "url": buildAbsoluteUrl('/'),
-    "logo": buildImageUrl(env.schema.organization.logo),
-    "description": env.schema.organization.description,
+    "logo": buildImageUrl(env.schema.business.logo),
+    "description": env.schema.business.description,
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": env.schema.organization.phone,
+      "telephone": env.schema.business.phone,
       "contactType": "customer service",
       "availableLanguage": ["Indonesian", "English"]
     },
@@ -193,7 +262,7 @@ export function generateOrganizationSchema() {
 }
 
 export function generateWebPageSchema({ post, featuredImageUrl, customTitle, customDescription, pageType = 'WebPage' }: SchemaGeneratorProps) {
-  const defaultImage = buildImageUrl(env.schema.organization.defaultImage);
+  const defaultImage = buildImageUrl(env.schema.business.defaultImage);
   
   if (!post) {
     return {
@@ -214,7 +283,7 @@ export function generateWebPageSchema({ post, featuredImageUrl, customTitle, cus
       },
       "publisher": {
         "@type": "Organization",
-        "name": env.schema.organization.name
+        "name": env.schema.business.name
       }
     };
   }
@@ -239,11 +308,11 @@ export function generateWebPageSchema({ post, featuredImageUrl, customTitle, cus
     "dateModified": post.modified,
     "author": {
       "@type": "Organization",
-      "name": `${env.schema.organization.name} Team`
+      "name": `${env.schema.business.name} Team`
     },
     "publisher": {
       "@type": "Organization",
-      "name": env.schema.organization.name
+      "name": env.schema.business.name
     },
     "mainEntity": {
       "@type": "Article",

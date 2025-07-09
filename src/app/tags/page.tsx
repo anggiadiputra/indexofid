@@ -11,18 +11,18 @@ import {
 import { env } from '@/config/environment';
 
 export const metadata: Metadata = {
-  title: `Semua Tag | ${env.schema.organization.name} Blog`,
-  description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}. Temukan artikel berdasarkan kategori yang Anda minati.`,
+  title: `Semua Tag | ${env.schema.business.name} Blog`,
+  description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.business.name}. Temukan artikel berdasarkan kategori yang Anda minati.`,
   openGraph: {
-    title: `Semua Tag | ${env.schema.organization.name} Blog`,
-    description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}`,
+    title: `Semua Tag | ${env.schema.business.name} Blog`,
+    description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.business.name}`,
     type: 'website',
     url: '/tags',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `Semua Tag | ${env.schema.organization.name} Blog`,
-    description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}`,
+    title: `Semua Tag | ${env.schema.business.name} Blog`,
+    description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.business.name}`,
   },
   alternates: {
     canonical: '/tags',
@@ -69,13 +69,13 @@ export default function TagsPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            "name": `Semua Tag - ${env.schema.organization.name} Blog`,
-            "description": `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}`,
+                  "name": `Semua Tag - ${env.schema.business.name} Blog`,
+      "description": `Jelajahi semua tag dan topik artikel di blog ${env.schema.business.name}`,
             "url": `${env.site.url}/tags`,
             "inLanguage": env.schema.locale.language,
             "isPartOf": {
               "@type": "WebSite",
-              "name": `${env.schema.organization.name} Blog`,
+              "name": `${env.schema.business.name} Blog`,
               "url": env.site.url
             }
           })

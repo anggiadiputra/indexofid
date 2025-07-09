@@ -8,7 +8,7 @@ export const revalidate = 86400; // Revalidate every 24 hours
 import { env } from '@/config/environment';
 
 export const metadata: Metadata = {
-  title: `Jasa Setup VPS WordPress | ${env.schema.organization.name}`,
+  title: `Jasa Setup VPS WordPress | ${env.schema.business.name}`,
   description: 'Layanan konfigurasi VPS khusus WordPress. Optimalkan performa dan keamanan website dengan setup server yang tepat, cepat, dan aman.',
 };
 

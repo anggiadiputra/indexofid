@@ -8,7 +8,7 @@ export const revalidate = 86400; // Revalidate every 24 hours
 import { env } from '@/config/environment';
 
 export const metadata: Metadata = {
-  title: `Jasa Migrasi WordPress Profesional | ${env.schema.organization.name}`,
+  title: `Jasa Migrasi WordPress Profesional | ${env.schema.business.name}`,
   description: 'Layanan migrasi website WordPress yang aman, cepat, dan terpercaya. Pindahkan website WordPress tanpa downtime, kehilangan data, dan penurunan peringkat SEO.',
 };
 

@@ -153,10 +153,10 @@ export default function RootLayout({
                     <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-md">
                       <span className="text-primary-foreground font-bold text-sm">{env.site.logoText || 'JK'}</span>
                     </div>
-                    <span className="text-lg font-bold text-foreground">{env.schema.organization.name}</span>
+                    <span className="text-lg font-bold text-foreground">{env.schema.business.name}</span>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {env.schema.organization.description}
+                    {env.schema.business.description}
                   </p>
                   <div className="flex space-x-4">
                     {env.schema.social.facebook && (
@@ -205,41 +205,41 @@ export default function RootLayout({
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-foreground">Kontak Kami</h3>
                   <div className="space-y-3">
-                    {env.schema.organization.email && (
+                    {env.schema.business.email && (
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <a href={`mailto:${env.schema.organization.email}`} className="hover:text-primary transition-colors">
-                          {env.schema.organization.email}
+                        <a href={`mailto:${env.schema.business.email}`} className="hover:text-primary transition-colors">
+                          {env.schema.business.email}
                         </a>
                       </div>
                     )}
-                    {env.schema.organization.phone && (
+                    {env.schema.business.phone && (
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
-                        <a href={`tel:${env.schema.organization.phone.replace(/\s/g, '')}`} className="hover:text-primary transition-colors">
-                          {env.schema.organization.phone}
+                        <a href={`tel:${env.schema.business.phone.replace(/\s/g, '')}`} className="hover:text-primary transition-colors">
+                          {env.schema.business.phone}
                         </a>
                       </div>
                     )}
-                    {env.schema.organization.address && (
+                    {env.schema.business.address && (
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span>{env.schema.organization.address}</span>
+                        <span>{env.schema.business.address}</span>
                       </div>
                     )}
-                    {env.schema.organization.hours && (
+                    {env.schema.business.hours && (
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>{env.schema.organization.hours}</span>
+                        <span>{env.schema.business.hours}</span>
                       </div>
                     )}
                   </div>

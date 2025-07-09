@@ -13,38 +13,42 @@ export default async function HomePage() {
   // Use parallel data fetching for optimal TTFB
   const { posts, popularPosts } = await getHomepageData();
 
-  // Enhanced Organization Schema for Tech News/Tutorial Platform
+  // Determine base URL for schema
+  const baseUrl = env.site.url || env.wordpress.frontendDomain || 'https://www.indexof.id';
+  const cleanBaseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+
+  // Enhanced Organization Schema - Fully Configurable from Environment
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": `${env.site.url}/#organization`,
-    "name": env.schema.organization.name,
-    "alternateName": "IndexOf ID",
-    "url": env.site.url,
+    "@type": env.schema.business.businessType,
+    "@id": `${cleanBaseUrl}/#organization`,
+    "name": env.schema.business.name,
+    "alternateName": env.schema.business.alternateName || env.schema.business.name,
+    "url": cleanBaseUrl,
     "logo": {
       "@type": "ImageObject",
-      "@id": `${env.site.url}${env.site.logo}`,
-      "url": `${env.site.url}${env.site.logo}`,
-      "caption": `${env.schema.organization.name} Logo`
+      "@id": `${cleanBaseUrl}${env.site.logo}`,
+      "url": `${cleanBaseUrl}${env.site.logo}`,
+      "caption": `${env.schema.business.name} Logo`
     },
-    "image": `${env.site.url}${env.site.logo}`,
-    "description": env.schema.organization.description,
-    "slogan": "Panduan Teknologi Terpercaya Indonesia",
-    "foundingDate": "2020-01-01",
+    "image": `${cleanBaseUrl}${env.site.logo}`,
+    "description": env.schema.business.description,
+    "slogan": env.schema.business.slogan || env.site.slogan,
+    "foundingDate": env.schema.business.foundingDate,
     "foundingLocation": {
       "@type": "Place",
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Jakarta",
+        "addressLocality": env.schema.business.addressLocality,
         "addressCountry": "ID"
       }
     },
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "@id": `${env.site.url}/#contact`,
-        "telephone": env.schema.organization.phone,
-        "email": env.schema.organization.email,
+        "@id": `${cleanBaseUrl}/#contact`,
+        "telephone": env.schema.business.phone,
+        "email": env.schema.business.email,
         "contactType": "customer service",
         "availableLanguage": ["id", "en"],
         "hoursAvailable": {
@@ -57,51 +61,36 @@ export default async function HomePage() {
     ],
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": env.schema.organization.streetAddress,
-      "addressLocality": env.schema.organization.addressLocality,
-      "addressRegion": env.schema.organization.addressRegion,
-      "postalCode": env.schema.organization.postalCode,
+      "streetAddress": env.schema.business.streetAddress,
+      "addressLocality": env.schema.business.addressLocality,
+      "addressRegion": env.schema.business.addressRegion,
+      "postalCode": env.schema.business.postalCode,
       "addressCountry": "ID"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": -6.2088,
-      "longitude": 106.8456
+      "latitude": env.schema.business.latitude,
+      "longitude": env.schema.business.longitude
     },
-    "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin].filter(Boolean),
+    "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin, env.schema.social.instagram, env.schema.social.youtube].filter(Boolean),
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": env.site.url
+      "@id": cleanBaseUrl
     },
-    "knowsAbout": [
-      "WordPress Development",
-      "VPS Management", 
-      "Web Hosting",
-      "Domain Registration",
-      "Website Security",
-      "Performance Optimization",
-      "Digital Marketing",
-      "E-commerce Solutions"
-    ],
-    "expertise": [
-      "WordPress",
-      "VPS",
-      "Web Hosting",
-      "Domain Management",
-      "Web Security"
-    ],
+    "knowsAbout": env.schema.business.knowsAbout,
+    "expertise": env.schema.business.expertise,
     "areaServed": {
       "@type": "Country",
-      "name": "Indonesia"
+      "name": env.schema.locale.country
     },
     "audience": {
       "@type": "Audience",
-      "audienceType": "Developers, Business Owners, Tech Enthusiasts"
+      "audienceType": env.schema.business.audienceType
     },
     "brand": {
       "@type": "Brand",
-      "name": env.schema.organization.name,
-      "logo": `${env.site.url}${env.site.logo}`
+      "name": env.schema.business.name,
+      "logo": `${cleanBaseUrl}${env.site.logo}`
     },
     "parentOrganization": null,
     "subOrganization": [],
@@ -111,15 +100,15 @@ export default async function HomePage() {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": `${env.schema.organization.name} - ${env.site.description}`,
-    "url": env.site.url,
-    "description": env.site.description,
+    "name": `${env.schema.business.name} - ${env.site.description || env.schema.business.description}`,
+    "url": cleanBaseUrl,
+    "description": env.site.description || env.schema.business.description,
     "inLanguage": env.schema.locale.language,
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": `${env.site.url}/blog?search={search_term_string}`
+        "urlTemplate": `${cleanBaseUrl}/blog?search={search_term_string}`
       },
       "query-input": "required name=search_term_string"
     }
@@ -128,65 +117,47 @@ export default async function HomePage() {
   const professionalServiceSchema = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    "@id": `${env.site.url}/#service`,
-    "name": env.schema.organization.name,
-    "alternateName": "IndexOf ID Services",
-    "url": env.site.url,
-    "logo": `${env.site.url}${env.site.logo}`,
-    "image": `${env.site.url}${env.site.logo}`,
-    "description": "Penyedia layanan domain, hosting, VPS, dan solusi WordPress profesional di Indonesia",
-    "slogan": "Solusi Digital Terpercaya Indonesia",
-    "foundingDate": "2020-01-01",
-    "serviceType": [
-      "Domain Registration",
-      "VPS Hosting",
-      "WordPress Services",
-      "Web Development",
-      "Malware Removal",
-      "Website Migration"
+    "@id": `${cleanBaseUrl}/#service`,
+    "name": env.schema.business.name,
+    "alternateName": env.schema.business.alternateName || `${env.schema.business.name} Services`,
+    "url": cleanBaseUrl,
+    "logo": `${cleanBaseUrl}${env.site.logo}`,
+    "image": `${cleanBaseUrl}${env.site.logo}`,
+    "description": env.schema.business.description,
+    "slogan": env.schema.business.slogan || env.site.slogan,
+    "foundingDate": env.schema.business.foundingDate,
+    "serviceType": env.schema.services.primary.length > 0 ? env.schema.services.primary : [
+      "Technology Services",
+      "Web Development", 
+      "Digital Solutions"
     ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Digital Services",
-      "itemListElement": [
-        {
+      "itemListElement": env.schema.services.primary.map((service, index) => {
+        const serviceKey = `service${index + 1}` as keyof typeof env.schema.services.serviceDescriptions;
+        return {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "Domain Registration",
-            "description": "Pendaftaran domain dengan harga terjangkau dan proses cepat"
+            "name": service || `Service ${index + 1}`,
+            "description": env.schema.services.serviceDescriptions[serviceKey] || `Professional ${(service || 'business').toLowerCase()} services`
           }
-        },
-        {
-          "@type": "Offer", 
-          "itemOffered": {
-            "@type": "Service",
-            "name": "VPS Hosting",
-            "description": "Layanan VPS managed dan setup profesional"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service", 
-            "name": "WordPress Services",
-            "description": "Migrasi, maintenance, dan optimasi WordPress"
-          }
-        }
-      ]
+        };
+      })
     },
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": env.schema.organization.streetAddress,
-      "addressLocality": env.schema.organization.addressLocality,
-      "addressRegion": env.schema.organization.addressRegion,
-      "postalCode": env.schema.organization.postalCode,
+      "streetAddress": env.schema.business.streetAddress,
+      "addressLocality": env.schema.business.addressLocality,
+      "addressRegion": env.schema.business.addressRegion,
+      "postalCode": env.schema.business.postalCode,
       "addressCountry": "ID"
     },
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": env.schema.organization.phone,
-      "email": env.schema.organization.email,
+      "telephone": env.schema.business.phone,
+      "email": env.schema.business.email,
       "contactType": "customer service"
     },
     "openingHoursSpecification": {
@@ -197,22 +168,15 @@ export default async function HomePage() {
     },
     "areaServed": {
       "@type": "Country",
-      "name": "Indonesia"
+      "name": env.schema.locale.country
     },
     "audience": {
       "@type": "Audience",
-      "audienceType": "Business owners, developers, entrepreneurs in Indonesia"
+      "audienceType": env.schema.business.audienceType
     },
-    "knowsAbout": [
-      "Domain Management",
-      "VPS Administration",
-      "WordPress Development",
-      "Web Hosting",
-      "Website Security",
-      "Performance Optimization"
-    ],
+    "knowsAbout": env.schema.business.knowsAbout,
     "parentOrganization": {
-      "@id": `${env.site.url}/#organization`
+      "@id": `${cleanBaseUrl}/#organization`
     }
   };
 

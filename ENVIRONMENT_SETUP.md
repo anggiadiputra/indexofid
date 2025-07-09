@@ -1,206 +1,261 @@
-# Environment Variable Setup Guide
+# Environment Setup Guide
 
-## Overview
+This guide explains how to configure environment variables for the IndexOf.ID headless WordPress project.
 
-This Next.js headless WordPress application has been fully refactored to use environment variables for all configuration. This makes it easy to:
+## Quick Start
 
-- **Rebrand** by changing a few environment variables
-- **Migrate domains** without touching code
-- **Deploy multiple instances** with different configurations
-- **Support multiple environments** (dev, staging, production)
-
-## Quick Setup
-
-1. Copy the example environment file:
-   ```bash
-   cp env.local.example .env.local
-   ```
-
-2. Update the variables in `.env.local` with your actual values
-
-3. Restart your development server:
-   ```bash
-   npm run dev
-   ```
-
-## Core Environment Variables
-
-### 🌐 Site Configuration
+1. Copy the environment template:
 ```bash
-# Primary site settings
-NEXT_PUBLIC_SITE_URL=https://yourdomain.com
-NEXT_PUBLIC_SITE_NAME=Your Site Name
-NEXT_PUBLIC_SITE_DESCRIPTION=Your site description
-NEXT_PUBLIC_SITE_LOGO_TEXT=YS
-NEXT_PUBLIC_SITE_SLOGAN=Your catchy slogan
-NEXT_PUBLIC_SITE_AUTHOR=Your Name
-
-# Images and media
-NEXT_PUBLIC_OG_IMAGE=/og-image.jpg
-NEXT_PUBLIC_TWITTER_IMAGE=/twitter-image.jpg
-NEXT_PUBLIC_SITE_LOGO=/logo.png
-NEXT_PUBLIC_RSS_TITLE=Your Site RSS Feed
-
-# Social media
-NEXT_PUBLIC_TWITTER_HANDLE=your_handle
-NEXT_PUBLIC_FACEBOOK_URL=https://facebook.com/yourpage
-NEXT_PUBLIC_TWITTER_URL=https://twitter.com/youraccount
-NEXT_PUBLIC_LINKEDIN_URL=https://linkedin.com/company/yourcompany
-
-# Next.js image optimization domains
-NEXT_PUBLIC_SITE_DOMAIN=www.yourdomain.com
-NEXT_PUBLIC_SITE_DOMAIN_ALT=yourdomain.com
-
-# Multilingual support (optional)
-NEXT_PUBLIC_ALT_LANGUAGE_URL=https://yourdomain.com/en
+cp env.local.example .env.local
 ```
 
-### 🗄️ WordPress API Configuration
-```bash
-# Primary WordPress backend
-WORDPRESS_API_URL=https://backend.yourdomain.com/wp-json/wp/v2
-NEXT_PUBLIC_WORDPRESS_API_URL=https://backend.yourdomain.com/wp-json/wp/v2
+2. Edit `.env.local` with your specific configuration
+3. Restart the development server: `npm run dev`
 
-# Fallback API (when primary fails)
-NEXT_PUBLIC_FALLBACK_API_URL=https://backup.yourdomain.com/wp-json/wp/v2
+## Core Configuration Sections
 
-# WordPress backend domain for Next.js image optimization
-NEXT_PUBLIC_WP_BACKEND_DOMAIN=backend.yourdomain.com
+### WordPress API Configuration
+
+Configure your WordPress backend connection:
+
+```env
+# WordPress API endpoints
+WORDPRESS_API_URL=https://backend.indexof.id/wp-json/wp/v2
+NEXT_PUBLIC_WORDPRESS_API_URL=https://backend.indexof.id/wp-json/wp/v2
+
+# Domain mapping for headless setup
+NEXT_PUBLIC_WORDPRESS_BACKEND_URL=https://backend.indexof.id
+NEXT_PUBLIC_FRONTEND_DOMAIN=https://www.indexof.id
 ```
 
-### 🏢 Organization Schema
-```bash
-# Organization details (for SEO and schema markup)
-NEXT_PUBLIC_ORG_NAME=Your Organization Name
-NEXT_PUBLIC_ORG_DESCRIPTION=Your organization description
-NEXT_PUBLIC_ORG_PHONE=+1-234-567-8900
-NEXT_PUBLIC_ORG_EMAIL=contact@yourdomain.com
-NEXT_PUBLIC_ORG_ADDRESS=Your City, Your Country
-NEXT_PUBLIC_ORG_HOURS=Monday - Friday: 09:00 - 17:00
+### Site Configuration
 
-# Schema.org policy URLs
-# Policy URLs removed - not needed for technical blog
-NEXT_PUBLIC_ABOUT_URL=/about
+Basic site information:
+
+```env
+NEXT_PUBLIC_SITE_NAME=IndexOf.ID
+NEXT_PUBLIC_SITE_URL=https://www.indexof.id
+NEXT_PUBLIC_SITE_DESCRIPTION=Platform teknologi terdepan untuk solusi domain, hosting, VPS, dan pengembangan website profesional di Indonesia
+NEXT_PUBLIC_SITE_SLOGAN=Solusi Digital Terpercaya Indonesia
 ```
 
-### 📞 Contact & Services
-```bash
-# WhatsApp contact
-NEXT_PUBLIC_WHATSAPP_NUMBER=1234567890
+## Business Schema Configuration (RECOMMENDED)
 
-# Customer portal (optional)
-NEXT_PUBLIC_CUSTOMER_LOGIN_URL=https://dashboard.yourdomain.com/login
+### New Business Variables
 
-# Services for schema markup
-NEXT_PUBLIC_SERVICE_1=Your Service 1
-NEXT_PUBLIC_SERVICE_2=Your Service 2
-NEXT_PUBLIC_SERVICE_3=Your Service 3
-NEXT_PUBLIC_SERVICE_4=Your Service 4
+The latest version uses `BUSINESS` prefix for improved semantic accuracy:
+
+```env
+# Business Information
+NEXT_PUBLIC_BUSINESS_NAME=IndexOf.ID
+NEXT_PUBLIC_BUSINESS_ALTERNATE_NAME=Index Of Indonesia
+NEXT_PUBLIC_BUSINESS_DESCRIPTION=Platform teknologi terdepan untuk solusi domain, hosting, VPS, dan pengembangan website profesional di Indonesia
+NEXT_PUBLIC_BUSINESS_TYPE=ProfessionalService
+
+# Contact Information
+NEXT_PUBLIC_BUSINESS_PHONE=+62-852-889-89824
+NEXT_PUBLIC_BUSINESS_EMAIL=support@indexof.id
+
+# Address Information
+NEXT_PUBLIC_BUSINESS_STREET_ADDRESS=Jl. Maguwo Raya No. 123
+NEXT_PUBLIC_BUSINESS_LOCALITY=Sleman
+NEXT_PUBLIC_BUSINESS_REGION=DI Yogyakarta
+NEXT_PUBLIC_BUSINESS_POSTAL_CODE=55285
+
+# Geographic Coordinates
+NEXT_PUBLIC_BUSINESS_LATITUDE=-7.7553
+NEXT_PUBLIC_BUSINESS_LONGITUDE=110.4186
 ```
 
-### 🌍 Localization
-```bash
-# Language and region settings
-NEXT_PUBLIC_SITE_LANGUAGE=en-US
-NEXT_PUBLIC_SITE_COUNTRY=United States
+### Legacy Organization Variables (Backward Compatibility)
+
+For backward compatibility, `ORG` variables are still supported:
+
+```env
+NEXT_PUBLIC_ORG_NAME=IndexOf.ID
+NEXT_PUBLIC_ORG_DESCRIPTION=Platform teknologi...
+# ... other ORG variables
 ```
 
-## Migration Scenarios
+**Variable Priority:** BUSINESS → ORG → empty string
 
-### 🔄 Domain Change
-To change domain from `oldsite.com` to `newsite.com`:
+## Fixing Common Schema Issues
 
-1. Update `.env.local`:
-   ```bash
-   NEXT_PUBLIC_SITE_URL=https://newsite.com
-   NEXT_PUBLIC_SITE_DOMAIN=www.newsite.com
-   NEXT_PUBLIC_SITE_DOMAIN_ALT=newsite.com
-   # Update other domain-specific URLs...
-   ```
+### 1. Empty URLs in Schema
 
-2. Update `next.config.js` if using different image domains
+**Problem:** Schema shows empty `"url": ""` values
 
-3. Restart development server
+**Solution:** Ensure these variables are set:
+```env
+# Primary URL configuration
+NEXT_PUBLIC_SITE_URL=https://www.indexof.id
 
-### 🏷️ Rebranding
-To rebrand from "Old Brand" to "New Brand":
+# Fallback URL for development
+NEXT_PUBLIC_FRONTEND_DOMAIN=http://localhost:3000
+```
 
-1. Update branding variables:
-   ```bash
-   NEXT_PUBLIC_SITE_NAME=New Brand
-   NEXT_PUBLIC_ORG_NAME=New Brand Inc.
-   NEXT_PUBLIC_SITE_LOGO_TEXT=NB
-   NEXT_PUBLIC_SITE_SLOGAN=Your new slogan
-   ```
+The system will use fallback order: `SITE_URL` → `FRONTEND_DOMAIN` → `https://www.indexof.id`
 
-2. Update social media URLs and service descriptions
+### 2. Missing Geo Coordinates
 
-3. Replace logo and image files
+**Problem:** Schema shows `"geo": null`
 
-### 🌐 Multi-tenant Setup
-For multiple sites using the same codebase:
+**Solution:** Add valid coordinates for your business location:
+```env
+# Coordinates for Sleman, Yogyakarta
+NEXT_PUBLIC_BUSINESS_LATITUDE=-7.7553
+NEXT_PUBLIC_BUSINESS_LONGITUDE=110.4186
+```
 
-1. Create environment files for each site:
-   - `.env.local.site1`
-   - `.env.local.site2`
-   - `.env.local.site3`
+### 3. Placeholder Social Media Links
 
-2. Use deployment scripts to copy the appropriate file:
-   ```bash
-   cp .env.local.site1 .env.local && npm run build
-   ```
+**Problem:** Schema shows default `https://facebook.com/your-page` links
 
-## What Changed?
+**Solution:** Update with real social media URLs:
+```env
+NEXT_PUBLIC_FACEBOOK_URL=https://facebook.com/indexofid
+NEXT_PUBLIC_TWITTER_URL=https://twitter.com/indexofid
+NEXT_PUBLIC_LINKEDIN_URL=https://linkedin.com/company/indexofid
+NEXT_PUBLIC_INSTAGRAM_URL=https://instagram.com/indexofid
+NEXT_PUBLIC_YOUTUBE_URL=https://youtube.com/@indexofid
+```
 
-### ✅ Environmentalized Components
-- **Layout metadata** (OpenGraph, Twitter, canonical URLs)
-- **Homepage schema** (Organization, Website, Local Business)
-- **Service pages** (titles, content)
-- **Blog pages** (metadata, schema)
-- **Navigation** (branding, links)
-- **Social media** links and handles
-- **Image domains** (Next.js optimization)
+### 4. Empty Services Array
 
-### 🔧 Configuration Files Updated
-- `src/config/environment.ts` - Centralized configuration
-- `src/app/layout.tsx` - Dynamic metadata
-- `src/app/page.tsx` - Environment-based schema
-- `next.config.js` - Dynamic image domains
-- All service and blog pages
+**Problem:** Schema shows `"serviceType": []`
 
-### 📂 Environment Templates
-- `env.local.example` - Current site configuration
-- `env.example` - Generic template for any site
+**Solution:** Configure your business services:
+```env
+NEXT_PUBLIC_SERVICE_1=WordPress Maintenance
+NEXT_PUBLIC_SERVICE_2=VPS Management
+NEXT_PUBLIC_SERVICE_3=Malware Removal
+NEXT_PUBLIC_SERVICE_4=Website Migration
 
-## Testing
+# Service descriptions
+NEXT_PUBLIC_SERVICE_1_DESC=Layanan maintenance dan optimasi WordPress profesional
+NEXT_PUBLIC_SERVICE_2_DESC=Setup dan pengelolaan VPS managed dengan keamanan tinggi
+NEXT_PUBLIC_SERVICE_3_DESC=Pembersihan malware dan perlindungan keamanan website
+NEXT_PUBLIC_SERVICE_4_DESC=Migrasi website dan domain dengan aman tanpa downtime
+```
 
-After updating environment variables:
+### 5. Inconsistent Address Information
 
-1. **Check metadata**: View page source and verify OpenGraph/Twitter cards
-2. **Test schema**: Use Google's Rich Results Test
-3. **Verify images**: Ensure image optimization works with new domains
-4. **Check links**: Verify all navigation and social media links
-5. **Test search**: Ensure search functionality works with new branding
+**Problem:** Address shows wrong region (e.g., DKI Jakarta for Sleman location)
 
-## Deployment
+**Solution:** Ensure address consistency:
+```env
+# For Sleman, Yogyakarta location
+NEXT_PUBLIC_BUSINESS_LOCALITY=Sleman
+NEXT_PUBLIC_BUSINESS_REGION=DI Yogyakarta
+NEXT_PUBLIC_BUSINESS_POSTAL_CODE=55285
+```
 
-### Vercel
-Add environment variables in Vercel dashboard:
-1. Go to Project Settings → Environment Variables
-2. Add all `NEXT_PUBLIC_*` variables
-3. Redeploy
+## Schema Testing
 
-### Other Platforms
-Ensure all environment variables are set in your hosting platform's environment configuration.
+### Test Local Schema
+
+1. Start development server: `npm run dev`
+2. Test JSON-LD API: `curl http://localhost:3000/api/json-ld | jq`
+3. Check specific schema properties:
+
+```bash
+# Test business information
+curl -s "http://localhost:3000/api/json-ld" | jq '.["@graph"][0] | {name, url, logo, address, geo, sameAs}'
+
+# Test services
+curl -s "http://localhost:3000/api/json-ld" | jq '.["@graph"][0].serviceType'
+
+# Test full schema
+curl -s "http://localhost:3000" | grep -A 50 'application/ld+json'
+```
+
+### Production Schema Validation
+
+1. Use Google's Rich Results Test: https://search.google.com/test/rich-results
+2. Schema.org validator: https://validator.schema.org/
+3. Check for structured data warnings in Google Search Console
+
+## Migration Guide
+
+### From Organization to Business Schema
+
+1. **Backup current configuration:**
+```bash
+cp .env.local .env.local.backup
+```
+
+2. **Add new BUSINESS variables** (copy values from existing ORG variables):
+```env
+NEXT_PUBLIC_BUSINESS_NAME=IndexOf.ID  # was NEXT_PUBLIC_ORG_NAME
+NEXT_PUBLIC_BUSINESS_PHONE=+62-852-889-89824  # was NEXT_PUBLIC_ORG_PHONE
+# ... continue for all variables
+```
+
+3. **Keep ORG variables** for backward compatibility (optional)
+
+4. **Test the migration:**
+```bash
+npm run dev
+curl -s "http://localhost:3000/api/json-ld" | jq '.["@graph"][0].name'
+```
+
+### Benefits of Migration
+
+- ✅ **Semantic Accuracy:** Uses business-appropriate terminology
+- ✅ **Enhanced Services:** Better service catalog management
+- ✅ **Social Media Support:** Instagram and YouTube integration
+- ✅ **Geographic Precision:** Proper coordinates and address handling
+- ✅ **Backward Compatibility:** Existing ORG variables still work
+- ✅ **Schema Validation:** Improved compliance with Schema.org standards
+
+## Troubleshooting
+
+### Schema Not Updating
+
+1. **Restart development server** after environment changes
+2. **Clear browser cache** for client-side changes
+3. **Check environment loading** with debug commands
+
+### Environment Variable Debug
+
+```bash
+# Check if variables are loaded
+node -e "console.log(process.env.NEXT_PUBLIC_BUSINESS_NAME)"
+
+# Test environment configuration
+curl -s "http://localhost:3000/api/json-ld" | jq '.["@graph"][0] | keys'
+```
+
+### Common Validation Errors
+
+1. **Missing required fields:** Add all address components
+2. **Invalid coordinates:** Use decimal degrees format (-7.7553, 110.4186)
+3. **Malformed URLs:** Ensure proper protocol (https://)
+4. **Empty service arrays:** Configure at least one service
+
+## Production Deployment
+
+### Vercel Configuration
+
+1. Add environment variables in Vercel dashboard
+2. Use production URLs: `https://www.indexof.id`
+3. Test deployed schema: `https://www.indexof.id/api/json-ld`
+
+### Environment Variable Security
+
+- ✅ **Public variables:** NEXT_PUBLIC_* (safe to expose)
+- ❌ **Private variables:** API keys, secrets (server-only)
+- ✅ **Schema variables:** All business schema vars are public
 
 ## Support
 
-If you encounter issues after changing environment variables:
-1. Clear Next.js cache: `rm -rf .next`
-2. Restart development server
-3. Check browser console for any remaining hardcoded references
-4. Verify all required environment variables are set
+For schema-related issues:
+1. Check this documentation
+2. Validate schema with online tools
+3. Test with Google Rich Results
+4. Review browser console for errors
 
 ---
 
-**Note**: This setup provides 100% flexibility for domain changes, rebranding, and multi-tenant deployments without code modifications. 
+**Last Updated:** January 2025  
+**Schema Version:** Business Schema v2.0 with backward compatibility 

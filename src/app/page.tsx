@@ -80,8 +80,8 @@ export default async function HomePage() {
       "Domain Registration",
       "Website Security",
       "Performance Optimization",
-      "Indonesian Technology News",
-      "Web Development Tutorials"
+      "Digital Marketing",
+      "E-commerce Solutions"
     ],
     "expertise": [
       "WordPress",
@@ -125,25 +125,56 @@ export default async function HomePage() {
     }
   };
 
-  const newsMediaSchema = {
+  const professionalServiceSchema = {
     "@context": "https://schema.org",
-    "@type": "NewsMediaOrganization",
-    "@id": `${env.site.url}/#newsmedia`,
+    "@type": "ProfessionalService",
+    "@id": `${env.site.url}/#service`,
     "name": env.schema.organization.name,
-    "alternateName": "IndexOf ID News",
+    "alternateName": "IndexOf ID Services",
     "url": env.site.url,
     "logo": `${env.site.url}${env.site.logo}`,
     "image": `${env.site.url}${env.site.logo}`,
-    "description": "Platform berita teknologi dan tutorial terpercaya di Indonesia",
-    "slogan": "Berita Teknologi Terdepan Indonesia",
+    "description": "Penyedia layanan domain, hosting, VPS, dan solusi WordPress profesional di Indonesia",
+    "slogan": "Solusi Digital Terpercaya Indonesia",
     "foundingDate": "2020-01-01",
-    "inLanguage": ["id", "en"],
-    "publishingPrinciples": `${env.site.url}${env.schema.organization.aboutUrl}`,
-    "masthead": `${env.site.url}${env.schema.organization.aboutUrl}`,
-    "missionCoveragePrioritiesPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
-    "unnamedSourcesPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
-    "actionableFeedbackPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
-    "correctionsPolicy": `${env.site.url}${env.schema.organization.aboutUrl}`,
+    "serviceType": [
+      "Domain Registration",
+      "VPS Hosting",
+      "WordPress Services",
+      "Web Development",
+      "Malware Removal",
+      "Website Migration"
+    ],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Digital Services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Domain Registration",
+            "description": "Pendaftaran domain dengan harga terjangkau dan proses cepat"
+          }
+        },
+        {
+          "@type": "Offer", 
+          "itemOffered": {
+            "@type": "Service",
+            "name": "VPS Hosting",
+            "description": "Layanan VPS managed dan setup profesional"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service", 
+            "name": "WordPress Services",
+            "description": "Migrasi, maintenance, dan optimasi WordPress"
+          }
+        }
+      ]
+    },
     "address": {
       "@type": "PostalAddress",
       "streetAddress": env.schema.organization.streetAddress,
@@ -156,7 +187,13 @@ export default async function HomePage() {
       "@type": "ContactPoint",
       "telephone": env.schema.organization.phone,
       "email": env.schema.organization.email,
-      "contactType": "editorial office"
+      "contactType": "customer service"
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "00:00",
+      "closes": "23:59"
     },
     "areaServed": {
       "@type": "Country",
@@ -164,14 +201,15 @@ export default async function HomePage() {
     },
     "audience": {
       "@type": "Audience",
-      "audienceType": "Technology professionals, developers, business owners in Indonesia"
+      "audienceType": "Business owners, developers, entrepreneurs in Indonesia"
     },
     "knowsAbout": [
-      "Technology News",
-      "WordPress Updates", 
-      "VPS Technology",
-      "Web Development",
-      "Indonesian Tech Industry"
+      "Domain Management",
+      "VPS Administration",
+      "WordPress Development",
+      "Web Hosting",
+      "Website Security",
+      "Performance Optimization"
     ],
     "parentOrganization": {
       "@id": `${env.site.url}/#organization`
@@ -196,7 +234,7 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(newsMediaSchema)
+          __html: JSON.stringify(professionalServiceSchema)
         }}
       />
       

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getRankMathSEO, extractRankMathSEOData, type RankMathSEOData, type RankMathExtractedData } from '@/lib/rankmath-api';
+import { getUrlAnalysis, getSampleTestUrl } from '@/lib/url-utils';
 import '@/lib/debug-rankmath'; // Load debug utilities
 import { 
   generateOrganizationSchema, 
@@ -63,13 +64,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
     const fetchSEOData = async () => {
       try {
         console.log('[SEOHead] 🚀 Starting SEO data fetch for URL:', url);
-        console.log('[SEOHead] 🔍 URL analysis:', {
-          inputUrl: url,
-          isAbsolute: url.startsWith('http'),
-          isFrontendUrl: url.includes('www.indexof.id') || url.includes('indexof.id'),
-          isBackendUrl: url.includes('backend.indexof.id'),
-          shouldTransform: !url.includes('backend.indexof.id') && !url.startsWith('/')
-        });
+        console.log('[SEOHead] 🔍 URL analysis:', getUrlAnalysis(url));
         setSeoState(prev => ({ ...prev, loading: true, error: null }));
         
         const rankMathData = await getRankMathSEO(url);
@@ -256,7 +251,7 @@ if (typeof window !== 'undefined') {
     },
     
     test: async (testUrl?: string) => {
-      const url = testUrl || `${process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'https://your-wordpress-backend.com'}/sample-post/`;
+      const url = testUrl || getSampleTestUrl();
       console.log('🧪 [RankMath Debug] Testing with URL:', url);
       
       try {
@@ -288,7 +283,7 @@ if (typeof window !== 'undefined') {
 
     // Enhanced debug function for deep analysis
     analyze: async (testUrl?: string) => {
-      const url = testUrl || `${process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'https://your-wordpress-backend.com'}/sample-post/`;
+      const url = testUrl || getSampleTestUrl();
       console.log('🔍 [RankMath Debug] Deep analysis for:', url);
       
       try {

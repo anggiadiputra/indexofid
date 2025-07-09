@@ -2,6 +2,7 @@
 
 import { serverCache } from './server-cache';
 import { env } from '@/config/environment';
+import { getBackendUrl } from './url-utils';
 
 // TypeScript interfaces for Rank Math API response
 export interface RankMathSEOData {
@@ -671,10 +672,7 @@ class RankMathAPIService {
     }
 
     // For RankMath API, we MUST use WordPress backend URL
-    const baseUrl = env.wordpress.backendUrl || 
-                   process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 
-                   process.env.WORDPRESS_BACKEND_URL || 
-                   'https://backend.indexof.id';
+    const baseUrl = getBackendUrl();
     
     console.log('[RankMath] normalizeUrl debug:', {
       inputUrl: url,

@@ -29,7 +29,7 @@ export class RankMathDebugger {
     });
     
     // Test with a sample URL
-    const testUrl = 'https://backend.indexof.id/cara-import-database-mysql-mariadb/';
+    const testUrl = `${process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'https://your-wordpress-backend.com'}/sample-post/`;
     console.log(`🧪 [RankMath Debug] Testing with URL: ${testUrl}`);
     
     try {

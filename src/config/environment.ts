@@ -5,7 +5,7 @@ export const env = {
     // WordPress backend site URL (for Rank Math and canonical URLs)
     backendUrl: process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || process.env.WORDPRESS_BACKEND_URL || process.env.WORDPRESS_API_URL?.replace('/wp-json/wp/v2', '') || '',
     // Frontend domain mapping - transform backend URLs to frontend URLs
-    frontendDomain: process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    frontendDomain: process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indexof.id',
   },
   // Rank Math API configuration
   rankmath: {
@@ -13,7 +13,7 @@ export const env = {
     apiUrl: process.env.NEXT_PUBLIC_RANKMATH_API_URL || '',
   },
   site: {
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indexof.id',
     name: process.env.NEXT_PUBLIC_SITE_NAME || 'Headless WordPress Blog',
     logoText: process.env.NEXT_PUBLIC_SITE_LOGO_TEXT || '',
     slogan: process.env.NEXT_PUBLIC_SITE_SLOGAN || '',

@@ -660,7 +660,7 @@ class RankMathAPIService {
     }
 
     // Get base URL from environment
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indexof.id';
     
     // Ensure URL starts with /
     const normalizedPath = url.startsWith('/') ? url : `/${url}`;
@@ -691,7 +691,7 @@ class RankMathAPIService {
     }
 
     try {
-      const testUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const testUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indexof.id';
       console.log(`[RankMath] Testing connection with URL: ${testUrl}`);
       const result = await this.getSEOHead(testUrl);
       const isConnected = result !== null;

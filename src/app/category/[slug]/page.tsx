@@ -47,7 +47,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     }
 
     // Generate breadcrumb schema
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indexof.id';
     const plainCategoryName = category.name.replace(/<[^>]*>/g, '');
     
     const breadcrumbSchema = {

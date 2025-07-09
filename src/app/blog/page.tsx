@@ -16,10 +16,7 @@ import { SinglePostSkeleton } from '@/components/BlogPostSkeleton';
 import { PostViewCount } from '@/components/PostViews';
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
-<<<<<<< HEAD
 import { env } from '@/config/environment';
-=======
->>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 
 // Dynamic imports for non-critical components
 const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
@@ -39,12 +36,9 @@ const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
   ssr: true
 });
-<<<<<<< HEAD
 
 // Import SEOHead for client-side rendering
 import SEOHead from '@/components/SEOHead';
-=======
->>>>>>> 0ca9e724a4c4d34bd67c432b1b1a47d26e0fe278
 
 interface BlogPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

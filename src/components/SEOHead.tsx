@@ -166,12 +166,36 @@ const SEOHead: React.FC<SEOHeadProps> = ({
           total: tempDiv.children.length
         });
         
+        // Check if breadcrumb schema exists in RankMath data
+        const hasBreadcrumb = seoState.rankMathData.head.toLowerCase().includes('breadcrumb');
+        console.log('[SEOHead] 🍞 Breadcrumb check:', { hasBreadcrumb });
+        
         // Move each child element to document head
         Array.from(tempDiv.children).forEach((element, index) => {
           element.setAttribute('data-rankmath', 'true');
           element.setAttribute('data-rankmath-index', index.toString());
           document.head.appendChild(element);
         });
+        
+        // If no breadcrumb schema in RankMath data, add our own
+        if (!hasBreadcrumb && (post || customTitle)) {
+          console.log('[SEOHead] 🍞 Adding missing breadcrumb schema');
+          const breadcrumbSchema = generateBreadcrumbSchema({
+            post: post || null,
+            postCategories: postCategories || [],
+            postTags: postTags || [],
+            featuredImageUrl,
+          });
+          
+          const breadcrumbScript = document.createElement('script');
+          breadcrumbScript.type = 'application/ld+json';
+          breadcrumbScript.textContent = JSON.stringify(breadcrumbSchema);
+          breadcrumbScript.setAttribute('data-rankmath', 'true');
+          breadcrumbScript.setAttribute('data-breadcrumb', 'true');
+          document.head.appendChild(breadcrumbScript);
+          
+          console.log('[SEOHead] ✅ Breadcrumb schema added to supplement RankMath data');
+        }
         
         console.log('[SEOHead] ✅ Rank Math SEO injected into document head');
       } else if (seoState.useFallback) {

@@ -4,16 +4,21 @@ const crypto = require('crypto');
 const nextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'www.jasakami.id',
-        pathname: '/wp-content/uploads/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'jasakami.id',
-        pathname: '/wp-content/uploads/**',
-      },
+              {
+          protocol: 'https',
+          hostname: process.env.NEXT_PUBLIC_SITE_DOMAIN || 'www.example.com',
+          pathname: '/wp-content/uploads/**',
+        },
+        {
+          protocol: 'https',
+          hostname: process.env.NEXT_PUBLIC_SITE_DOMAIN_ALT || 'example.com',
+          pathname: '/wp-content/uploads/**',
+        },
+        {
+          protocol: 'https',
+          hostname: process.env.NEXT_PUBLIC_WP_BACKEND_DOMAIN || 'backend.example.com',
+          pathname: '/wp-content/uploads/**',
+        },
       {
         protocol: 'https',
         hostname: 'www.heyapakabar.com',
@@ -34,9 +39,29 @@ const nextConfig = {
         hostname: 'caraqu.com',
         pathname: '/wp-content/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 's3.nevaobjects.id',
+        pathname: '/images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.nevaobjects.id',
+        pathname: '/imanges/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'beritahindu.com',
+        pathname: '/wp-content/uploads/**',
+      },
     ],
-    formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 60 * 60 * 24 * 30
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days cache
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    dangerouslyAllowSVG: false,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
   experimental: {
@@ -98,6 +123,15 @@ const nextConfig = {
             value: 'public, max-age=31536000, immutable'
           }
         ]
+      },
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
       }
     ]
   },
@@ -108,7 +142,7 @@ const nextConfig = {
   // Changed back to 'standalone' to support API routes
   output: 'standalone',
   
-  webpack: (config) => {
+  webpack: (config, { dev, isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       'wp-block-to-html': require.resolve('wp-block-to-html')
@@ -119,6 +153,39 @@ const nextConfig = {
       fs: false,
       path: false
     };
+
+    // Production optimizations
+    if (!dev && !isServer) {
+      // Optimize bundle splitting
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10,
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 5,
+            reuseExistingChunk: true,
+          },
+          wordpress: {
+            test: /[\\/]lib[\\/]wordpress-api/,
+            name: 'wordpress-api',
+            chunks: 'all',
+            priority: 15,
+          },
+        },
+      };
+
+      // Tree shaking optimization
+      config.optimization.usedExports = true;
+      config.optimization.sideEffects = false;
+    }
 
     return config;
   }

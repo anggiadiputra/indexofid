@@ -8,20 +8,21 @@ import {
   generateOrganizationSchema,
   generateBreadcrumbSchema 
 } from '@/lib/schema-generator';
+import { env } from '@/config/environment';
 
 export const metadata: Metadata = {
-  title: 'Semua Tag | JasaKami.ID Blog',
-  description: 'Jelajahi semua tag dan topik artikel di blog JasaKami.ID. Temukan artikel berdasarkan kategori yang Anda minati.',
+  title: `Semua Tag | ${env.schema.organization.name} Blog`,
+  description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}. Temukan artikel berdasarkan kategori yang Anda minati.`,
   openGraph: {
-    title: 'Semua Tag | JasaKami.ID Blog',
-    description: 'Jelajahi semua tag dan topik artikel di blog JasaKami.ID',
+    title: `Semua Tag | ${env.schema.organization.name} Blog`,
+    description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}`,
     type: 'website',
     url: '/tags',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Semua Tag | JasaKami.ID Blog',
-    description: 'Jelajahi semua tag dan topik artikel di blog JasaKami.ID',
+    title: `Semua Tag | ${env.schema.organization.name} Blog`,
+    description: `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}`,
   },
   alternates: {
     canonical: '/tags',
@@ -43,19 +44,19 @@ export default function TagsPage() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+                "item": env.site.url
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Blog",
-                "item": `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/blog`
+                "item": `${env.site.url}/blog`
               },
               {
                 "@type": "ListItem",
                 "position": 3,
                 "name": "Tag",
-                "item": `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/tags`
+                "item": `${env.site.url}/tags`
               }
             ]
           })
@@ -68,14 +69,14 @@ export default function TagsPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            "name": "Semua Tag - JasaKami.ID Blog",
-            "description": "Jelajahi semua tag dan topik artikel di blog JasaKami.ID",
-            "url": `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/tags`,
-            "inLanguage": "id-ID",
+            "name": `Semua Tag - ${env.schema.organization.name} Blog`,
+            "description": `Jelajahi semua tag dan topik artikel di blog ${env.schema.organization.name}`,
+            "url": `${env.site.url}/tags`,
+            "inLanguage": env.schema.locale.language,
             "isPartOf": {
               "@type": "WebSite",
-              "name": "JasaKami.ID Blog",
-              "url": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+              "name": `${env.schema.organization.name} Blog`,
+              "url": env.site.url
             }
           })
         }}

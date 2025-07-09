@@ -69,7 +69,7 @@ const navigationItems: NavigationItem[] = [
     ),
   },
   {
-    href: 'https://dash.indexof.id/customer/login',
+    href: process.env.NEXT_PUBLIC_CUSTOMER_LOGIN_URL || `${env.site.url}/login`,
     label: 'Akun',
     icon: (
       <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -2,6 +2,9 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import SearchResults from './SearchResults';
 
+// ISR configuration for search page
+export const revalidate = 3600; // Revalidate every hour
+
 interface SearchPageProps {
   searchParams: Promise<{
     search?: string;

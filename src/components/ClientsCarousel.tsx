@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { env } from '@/config/environment';
 
 interface Client {
   id: number;
@@ -18,7 +19,7 @@ const clients: Client[] = [
     name: 'TechCorp', 
     logo: '🏢',
     industry: 'Technology',
-    testimonial: 'Tim JasaKami.ID sangat profesional dalam menangani migrasi website kami. Prosesnya cepat dan aman.',
+    testimonial: `Tim ${env.schema.organization.name} sangat profesional dalam menyediakan berita dan informasi teknologi terkini. Kontennya selalu update dan berkualitas.`,
     rating: 5.0,
     gradient: 'from-blue-500 to-blue-600' 
   },

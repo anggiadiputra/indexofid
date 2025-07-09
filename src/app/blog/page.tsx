@@ -13,12 +13,32 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { serverCache } from '@/lib/server-cache';
 import { SinglePostSkeleton } from '@/components/BlogPostSkeleton';
-import PopularPosts from '@/components/PopularPosts';
-import LiveSearch from '@/components/LiveSearch';
-import NewsletterSignup from '@/components/NewsletterSignup';
 import { PostViewCount } from '@/components/PostViews';
 import { Suspense } from 'react';
-import BlogSidebar from '@/components/BlogSidebar';
+import dynamic from 'next/dynamic';
+import { env } from '@/config/environment';
+
+// Dynamic imports for non-critical components
+const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const LiveSearch = dynamic(() => import('@/components/LiveSearch'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-12"></div>,
+  ssr: true
+});
+
+const NewsletterSignup = dynamic(() => import('@/components/NewsletterSignup'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
+
+const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
+  ssr: true
+});
+
+// Import SEOHead for client-side rendering
+import SEOHead from '@/components/SEOHead';
 
 interface BlogPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -65,14 +85,16 @@ async function getBlogPageData(): Promise<{
 
   const blogData = { posts, categories, tags, popularPosts };
   
-  // Cache for 10 minutes
-  serverCache.set(cacheKey, blogData, 10 * 60 * 1000);
+  // Cache for 24 hours - Much more aggressive caching for better performance
+  serverCache.set(cacheKey, blogData, 24 * 60 * 60 * 1000); // 24 hours
   
   return blogData;
 }
 
-// Mark this route as dynamic because it depends on searchParams
-export const dynamic = 'force-dynamic';
+// Mark this route as SSR (Server-Side Rendering) for fresh content on each request
+// Removed ISR revalidate to enable SSR with 24-hour server-side caching
+
+// export const revalidate = 7200; // REMOVED - Converting to SSR
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   // Properly await searchParams in Next.js 15
@@ -117,23 +139,55 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
     // Handle filtering by category, tag, or search
     if (searchQuery) {
-      posts = await searchPosts(searchQuery, currentPage, postsPerPage);
+      const searchCacheKey = `search-${searchQuery}-page-${currentPage}`;
+      const cachedSearchResults = serverCache.get<WordPressPost[]>(searchCacheKey);
+      if (cachedSearchResults) {
+        posts = cachedSearchResults;
+      } else {
+        posts = await searchPosts(searchQuery, currentPage, postsPerPage);
+        // Cache search results for 1 hour
+        serverCache.set(searchCacheKey, posts, 60 * 60 * 1000);
+      }
     } else if (categorySlug) {
       selectedCategory = await getCategoryBySlug(categorySlug);
       if (selectedCategory) {
-        posts = await getPostsByCategory(selectedCategory.id, currentPage, postsPerPage);
+        const categoryCacheKey = `category-${selectedCategory.id}-page-${currentPage}`;
+        const cachedCategoryResults = serverCache.get<WordPressPost[]>(categoryCacheKey);
+        if (cachedCategoryResults) {
+          posts = cachedCategoryResults;
+        } else {
+          posts = await getPostsByCategory(selectedCategory.id, currentPage, postsPerPage);
+          // Cache category results for 6 hours
+          serverCache.set(categoryCacheKey, posts, 6 * 60 * 60 * 1000);
+        }
       } else {
         posts = await getAllPosts(currentPage, postsPerPage);
       }
     } else if (tagSlug) {
       selectedTag = await getTagBySlug(tagSlug);
       if (selectedTag) {
-        posts = await getPostsByTag(selectedTag.id, currentPage, postsPerPage);
+        const tagCacheKey = `tag-${selectedTag.id}-page-${currentPage}`;
+        const cachedTagResults = serverCache.get<WordPressPost[]>(tagCacheKey);
+        if (cachedTagResults) {
+          posts = cachedTagResults;
+        } else {
+          posts = await getPostsByTag(selectedTag.id, currentPage, postsPerPage);
+          // Cache tag results for 6 hours
+          serverCache.set(tagCacheKey, posts, 6 * 60 * 60 * 1000);
+        }
       } else {
         posts = await getAllPosts(currentPage, postsPerPage);
       }
     } else {
-      posts = await getAllPosts(currentPage, postsPerPage);
+      const allPostsCacheKey = `all-posts-page-${currentPage}`;
+      const cachedAllPosts = serverCache.get<WordPressPost[]>(allPostsCacheKey);
+      if (cachedAllPosts) {
+        posts = cachedAllPosts;
+      } else {
+        posts = await getAllPosts(currentPage, postsPerPage);
+        // Cache all posts pagination for 2 hours
+        serverCache.set(allPostsCacheKey, posts, 2 * 60 * 60 * 1000);
+      }
     }
   } catch (err) {
     console.error('Error fetching data for blog page:', err);
@@ -154,8 +208,38 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     return `/blog${query ? `?${query}` : ''}`;
   };
 
+  // Generate SEO URL for current page
+  const currentSEOUrl = (() => {
+    const params = new URLSearchParams();
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    if (searchQuery) params.set('search', searchQuery);
+    if (categorySlug) params.set('category', categorySlug);
+    if (tagSlug) params.set('tag', tagSlug);
+    const query = params.toString();
+    return `${env.site.url}/blog${query ? `?${query}` : ''}`;
+  })();
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Rank Math SEO Head for blog listing */}
+      <SEOHead
+        url={currentSEOUrl}
+        customTitle={
+          searchQuery ? `Hasil Pencarian: ${searchQuery} | ${env.site.name}` :
+          selectedCategory ? `${selectedCategory.name} | ${env.site.name}` :
+          selectedTag ? `Tag: ${selectedTag.name} | ${env.site.name}` :
+          `Blog | ${env.site.name}`
+        }
+        customDescription={
+          searchQuery ? `Hasil pencarian untuk "${searchQuery}" di ${env.site.name}` :
+          selectedCategory ? `Artikel dalam kategori ${selectedCategory.name}` :
+          selectedTag ? `Artikel dengan tag ${selectedTag.name}` :
+          `Kumpulan artikel teknologi terkini di ${env.site.name}`
+        }
+        pageType="WebPage"
+        fallbackEnabled={true}
+      />
+
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - 2/3 width */}
@@ -218,15 +302,15 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               </div>
             ) : (
               <>
-                {/* Blog Posts - Original Horizontal Card Layout */}
+                {/* Blog Posts - Improved Horizontal Card Layout */}
                 <div className="space-y-6">
                   {posts.map((post, index) => {
                     const featuredImageUrl = getFeaturedImageUrl(post);
                     return (
                       <article key={post.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
-                        <div className="flex flex-col md:flex-row">
+                        <div className="flex flex-col md:flex-row min-h-0">
                           {/* Featured Image - Left side */}
-                          <div className="md:w-80 flex-shrink-0 p-4">
+                          <div className="md:w-80 md:max-w-80 flex-shrink-0 p-4">
                             <div className="aspect-video md:aspect-[4/3] md:h-48 relative overflow-hidden rounded-lg">
                               {featuredImageUrl ? (
                                 <Image
@@ -247,26 +331,36 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                             </div>
                           </div>
 
-                          {/* Content - Right side */}
-                          <div className="flex-1 p-6">
-                            {/* Title */}
-                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                              <Link href={`/${post.slug}`}>
-                                <span dangerouslySetInnerHTML={{ __html: post.title?.rendered || 'Untitled Article' }} />
-                              </Link>
-                            </h2>
+                          {/* Content - Right side with proper overflow protection */}
+                          <div className="flex-1 min-w-0 p-6 flex flex-col justify-between">
+                            <div className="flex-1 min-h-0">
+                              {/* Title with proper overflow handling */}
+                              <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 line-clamp-2 overflow-hidden break-words hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <Link href={`/${post.slug}`} className="block">
+                                  <span 
+                                    className="break-words hyphens-auto"
+                                    dangerouslySetInnerHTML={{ __html: post.title?.rendered || 'Untitled Article' }} 
+                                  />
+                                </Link>
+                              </h2>
 
-                            {/* Excerpt */}
-                            <div className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                              <div dangerouslySetInnerHTML={{ __html: post.excerpt?.rendered || 'No description available' }} />
+                              {/* Excerpt with better overflow control */}
+                              <div className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 overflow-hidden break-words">
+                                <div 
+                                  className="break-words hyphens-auto [&>p]:mb-0 [&>*]:mb-0"
+                                  dangerouslySetInnerHTML={{ __html: post.excerpt?.rendered || 'No description available' }} 
+                                />
+                              </div>
                             </div>
 
-                            {/* Meta Info and Read More */}
-                            <div className="flex items-center justify-between">
-                              <PostViewCount post={post} />
+                            {/* Meta Info and Read More - Fixed at bottom */}
+                            <div className="flex items-center justify-between flex-shrink-0 pt-2">
+                              <div className="min-w-0 flex-shrink">
+                                <PostViewCount post={post} />
+                              </div>
                               <Link
                                 href={`/${post.slug}`}
-                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm flex items-center gap-1"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm flex items-center gap-1 flex-shrink-0 ml-4"
                               >
                                 Baca Selengkapnya
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

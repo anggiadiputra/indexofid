@@ -29,7 +29,7 @@ const TableOfContents = ({ content, postTitle }: TableOfContentsProps) => {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = content;
       
-      const headings = tempDiv.querySelectorAll('h2, h3, h4, h5, h6');
+      const headings = tempDiv.querySelectorAll('h2, h3');
       const items: TocItem[] = [];
       
       const cleanPostTitle = postTitle 
@@ -42,7 +42,7 @@ const TableOfContents = ({ content, postTitle }: TableOfContentsProps) => {
           if (!text) return;
           
           const level = parseInt(heading.tagName.charAt(1));
-          if (level < 2 || level > 6) return; // Only H2-H6
+          if (level < 2 || level > 3) return; // Only H2-H3
           
           // Skip if matches post title (case insensitive)
           if (cleanPostTitle && text.toLowerCase() === cleanPostTitle) {
@@ -77,7 +77,7 @@ const TableOfContents = ({ content, postTitle }: TableOfContentsProps) => {
         const articleElement = document.querySelector('article[data-content="article"]');
         if (!articleElement) return;
 
-        const domHeadings = articleElement.querySelectorAll('h2, h3, h4, h5, h6');
+        const domHeadings = articleElement.querySelectorAll('h2, h3');
         let tocIndex = 0;
 
         domHeadings.forEach((heading) => {
@@ -86,7 +86,7 @@ const TableOfContents = ({ content, postTitle }: TableOfContentsProps) => {
             if (!text) return;
 
             const level = parseInt(heading.tagName.charAt(1));
-            if (level < 2 || level > 6) return;
+            if (level < 2 || level > 3) return;
 
             // Skip if matches post title
             const cleanPostTitle = postTitle 
@@ -209,9 +209,7 @@ const TableOfContents = ({ content, postTitle }: TableOfContentsProps) => {
                   hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300
                   text-gray-700 dark:text-gray-300 hover:translate-x-1
                   ${item.level === 2 ? 'font-semibold text-sm' : ''}
-                  ${item.level === 3 ? 'ml-4 text-sm font-medium' : ''}
-                  ${item.level === 4 ? 'ml-8 text-xs' : ''}
-                  ${item.level >= 5 ? 'ml-12 text-xs opacity-75' : ''}
+                  ${item.level === 3 ? 'ml-6 text-sm font-medium' : ''}
                 `}
                 title={item.text}
               >

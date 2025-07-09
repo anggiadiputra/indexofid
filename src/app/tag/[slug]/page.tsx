@@ -11,6 +11,7 @@ import {
   generateWebPageSchema,
   generateOrganizationSchema 
 } from '@/lib/schema-generator';
+import { env } from '@/config/environment';
 
 interface TagPageProps {
   params: Promise<{ slug: string }>;
@@ -35,8 +36,8 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
     const description = tag.description || `Semua artikel dengan tag ${tagName}`;
 
     return {
-      title: `Tag: ${tagName} | JasaKami.ID Blog`,
-      description: `${description} - Temukan artikel terkait ${tagName} di blog JasaKami.ID`,
+      title: `Tag: ${tagName} | ${env.schema.organization.name} Blog`,
+      description: `${description} - Temukan artikel terkait ${tagName} di blog ${env.schema.organization.name}`,
       openGraph: {
         title: `Tag: ${tagName}`,
         description: description,
@@ -70,6 +71,9 @@ export async function generateStaticParams() {
     return [];
   }
 }
+
+// PERFORMANCE OPTIMIZATION: Add ISR for tag pages
+export const revalidate = 86400; // Revalidate every 24 hours (tags change very rarely)
 
 export default async function TagPage({ params }: TagPageProps) {
   const resolvedParams = await params;

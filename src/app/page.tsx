@@ -4,9 +4,10 @@ import { WordPressPost } from '@/types/wordpress';
 import ClientsCarousel from '@/components/ClientsCarousel';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { getHomepageData } from '@/lib/wordpress-api';
+import { env } from '@/config/environment';
 
-// Configure homepage rendering
-export const dynamic = 'force-dynamic'; // Force dynamic rendering instead of static
+// PERFORMANCE OPTIMIZATION: Use ISR instead of force-dynamic
+export const revalidate = 86400; // Revalidate every 24 hours
 
 export default async function HomePage() {
   // Use parallel data fetching for optimal TTFB
@@ -15,16 +16,16 @@ export default async function HomePage() {
   // Comprehensive Schema.org markup for WordPress Maintenance Services
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "JasaKami.ID - WordPress Maintenance Services",
-    "alternateName": "JasaKami.ID",
-    "url": "https://jasakami.id",
-    "logo": "https://jasakami.id/logo.png",
-    "description": "Spesialis layanan pemeliharaan WordPress profesional: migrasi aman, pembersihan malware, setup VPS, dan pengelolaan server untuk performa website yang optimal.",
+    "@type": "Organization", 
+    "name": `${env.schema.organization.name} - ${env.site.description}`,
+    "alternateName": env.schema.organization.name,
+    "url": env.site.url,
+    "logo": `${env.site.url}${env.site.logo}`,
+    "description": env.schema.organization.description,
     "foundingDate": "2020",
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+62-812-3456-7890",
+      "telephone": env.schema.organization.phone,
       "contactType": "customer service",
       "availableLanguage": ["Indonesian", "English"],
       "hoursAvailable": {
@@ -37,82 +38,47 @@ export default async function HomePage() {
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "ID",
-      "addressRegion": "Jakarta",
-      "addressLocality": "Jakarta"
+      "addressRegion": env.schema.organization.address.includes(',') ? env.schema.organization.address.split(',')[0].trim() : "Jakarta",
+      "addressLocality": env.schema.organization.address.includes(',') ? env.schema.organization.address.split(',')[0].trim() : "Jakarta"
     },
-    "sameAs": [
-      "https://facebook.com/jasakami.id",
-      "https://twitter.com/jasakami_id",
-      "https://linkedin.com/company/jasakami-id"
-    ],
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "WordPress Maintenance Services",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Jasa Migrasi WordPress",
-            "description": "Pindahkan website WordPress Anda dengan aman ke hosting baru. Zero downtime, data lengkap, dan konfigurasi otomatis dengan tim profesional.",
-            "provider": {
-              "@type": "Organization",
-              "name": "JasaKami.ID"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Jasa Remove Malware",
-            "description": "Pembersihan menyeluruh virus, malware, dan file berbahaya dari website WordPress Anda. Pulihkan keamanan dan kepercayaan pengunjung.",
-            "provider": {
-              "@type": "Organization",
-              "name": "JasaKami.ID"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Jasa Setup VPS",
-            "description": "Konfigurasi VPS profesional untuk performa maksimal. Instalasi server, security hardening, dan monitoring otomatis untuk website Anda.",
-            "provider": {
-              "@type": "Organization",
-              "name": "JasaKami.ID"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Jasa Manage VPS",
-            "description": "Pengelolaan VPS profesional 24/7. Maintenance, update keamanan, backup otomatis, dan monitoring real-time untuk stabilitas server Anda.",
-            "provider": {
-              "@type": "Organization",
-              "name": "JasaKami.ID"
-            }
-          }
-        }
-      ]
-    }
+    "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin].filter(Boolean),
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": env.site.url
+    },
+    "publishingPrinciples": `${env.site.url}${env.schema.organization.editorialPolicy}`,
+    "about": [
+      {
+        "@type": "Thing",
+        "name": "Teknologi"
+      },
+      {
+        "@type": "Thing", 
+        "name": "Berita"
+      },
+      {
+        "@type": "Thing",
+        "name": "Tutorial"
+      },
+      {
+        "@type": "Thing",
+        "name": "Indonesia"
+      }
+    ]
   };
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "JasaKami.ID - WordPress Maintenance Services",
-    "url": "https://jasakami.id",
-    "description": "Spesialis layanan pemeliharaan WordPress profesional di Indonesia",
-    "inLanguage": "id-ID",
+    "name": `${env.schema.organization.name} - ${env.site.description}`,
+    "url": env.site.url,
+    "description": env.site.description,
+    "inLanguage": env.schema.locale.language,
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://jasakami.id/blog?search={search_term_string}"
+        "urlTemplate": `${env.site.url}/blog?search={search_term_string}`
       },
       "query-input": "required name=search_term_string"
     }
@@ -120,12 +86,12 @@ export default async function HomePage() {
 
   const localBusinessSchema = {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    "name": "JasaKami.ID",
-    "image": "https://jasakami.id/logo.png",
-    "description": "Spesialis maintenance WordPress: migrasi, malware removal, VPS setup & management",
-    "url": "https://jasakami.id",
-    "telephone": "+62-812-3456-7890",
+    "@type": "NewsMediaOrganization",
+    "name": env.schema.organization.name,
+    "image": `${env.site.url}${env.site.logo}`,
+    "description": env.schema.organization.description,
+    "url": env.site.url,
+    "telephone": env.schema.organization.phone,
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "ID",
@@ -142,49 +108,15 @@ export default async function HomePage() {
       "opens": "00:00",
       "closes": "23:59"
     },
-    "serviceType": "WordPress Maintenance Services",
+    "serviceType": "Digital Media and News Publishing",
     "areaServed": {
       "@type": "Country",
-      "name": "Indonesia"
+      "name": env.schema.locale.country
     },
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "WordPress Maintenance Services",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "WordPress Migration Service",
-            "serviceType": "Website Migration"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Malware Removal Service",
-            "serviceType": "Website Security"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "VPS Setup Service",
-            "serviceType": "Server Configuration"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Managed VPS Service",
-            "serviceType": "Server Management"
-          }
-        }
-      ]
-    },
+    "publishingPrinciples": `${env.site.url}${env.schema.organization.editorialPolicy}`,
+    "ethicsPolicy": `${env.site.url}${env.schema.organization.ethicsPolicy}`,
+    "diversityPolicy": `${env.site.url}${env.schema.organization.diversityPolicy}`,
+    "masthead": `${env.site.url}${env.schema.organization.aboutUrl}`,
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "5.0",

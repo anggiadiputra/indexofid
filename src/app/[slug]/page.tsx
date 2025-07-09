@@ -5,21 +5,51 @@ import { Metadata } from 'next';
 import { getPostBySlug, getAllPostSlugs, getAllCategories, getAllTags, getAllPosts } from '@/lib/wordpress-api';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import BlockRenderer from '@/components/blocks/BlockRenderer';
-import TableOfContents from '@/components/TableOfContents';
-import LiveSearch from '@/components/LiveSearch';
-import RelatedPosts from '@/components/RelatedPosts';
-import SocialShare from '@/components/SocialShare';
 import PostViews from '@/components/PostViews';
-import NewsletterSignup from '@/components/NewsletterSignup';
-import PopularPosts from '@/components/PopularPosts';
 import { 
   generateBreadcrumbSchema, 
   generateArticleSchema, 
   generateOrganizationSchema, 
   generateWebPageSchema 
 } from '@/lib/schema-generator';
-import BlogSidebar from '@/components/BlogSidebar';
+import SEOHead, { getServerSideRankMathSEO } from '@/components/SEOHead';
 import { env } from '@/config/environment';
+import { resolveRankMathUrl, resolveFrontendUrl, findPostBySlugVariations } from '@/lib/url-resolver';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for non-critical components
+const TableOfContents = dynamic(() => import('@/components/TableOfContents'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>,
+  ssr: true
+});
+
+const LiveSearch = dynamic(() => import('@/components/LiveSearch'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-12"></div>,
+  ssr: true
+});
+
+const RelatedPosts = dynamic(() => import('@/components/RelatedPosts'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const SocialShare = dynamic(() => import('@/components/SocialShare'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-16"></div>
+});
+
+const NewsletterSignup = dynamic(() => import('@/components/NewsletterSignup'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
+
+const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
+  ssr: true
+});
+
+// SEOHead will be imported and used normally since it's a client component
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -49,7 +79,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   // Helper title with site name
   return {
-    title: `${plainTitle} | Headless WordPress Blog`,
+    title: `${plainTitle} | ${env.site.name}`,
     description: plainExcerpt || `Read ${plainTitle} on our blog`,
     authors: authors.length ? authors.map((n) => ({ name: n })) : undefined,
     openGraph: {
@@ -84,11 +114,8 @@ export async function generateStaticParams() {
   }
 }
 
-// Mark the route as dynamic to avoid build-time 404 for new posts
-// Use force-dynamic to ensure fresh data on each request
-export const dynamic = 'force-dynamic';
-// Disable static generation for this route
-export const fetchCache = 'force-no-store';
+// PERFORMANCE OPTIMIZATION: Use ISR instead of force-dynamic
+export const revalidate = 1296000; // Revalidate every 15 days
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;
@@ -105,8 +132,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   let error: string | null = null;
 
   try {
-    [post, allCategories, allTags, featuredPosts] = await Promise.all([
-      getPostBySlug(resolvedParams.slug),
+    // Try to find post with slug variations for better URL handling
+    const postResult = await findPostBySlugVariations(resolvedParams.slug);
+    
+    if (postResult.post && postResult.redirectSlug && postResult.redirectSlug !== resolvedParams.slug) {
+      // Found post with different slug, redirect to correct URL
+      redirect(`/${postResult.redirectSlug}`);
+    }
+    
+    post = postResult.post;
+    
+    [allCategories, allTags, featuredPosts] = await Promise.all([
       getAllCategories(),
       getAllTags(),
       getAllPosts(1, 6) // Get featured posts for sidebar
@@ -161,60 +197,27 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const authorDescription = authorData?.description || env.site.description;
   const avatarUrl = authorData?.avatar_urls?.['96'] || authorData?.avatar_urls?.['48'] || null;
 
+  // Get URLs using the resolver utilities
+  const rankMathUrl = resolveRankMathUrl(post);
+  const frontendUrl = resolveFrontendUrl(resolvedParams.slug);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Rank Math SEO Head with fallback to manual schema */}
+      <SEOHead
+        url={rankMathUrl}
+        post={post}
+        postCategories={postCategories}
+        postTags={postTags}
+        featuredImageUrl={featuredImageUrl}
+        pageType="Article"
+        fallbackEnabled={true}
+      />
+
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - 2/3 width */}
           <div className="lg:col-span-2">
-            {/* Dynamic JSON-LD Schema - Automatically adapts to any domain */}
-            
-            {/* Breadcrumb Schema */}
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(generateBreadcrumbSchema({
-                  post,
-                  postCategories,
-                  postTags,
-                  featuredImageUrl
-                }))
-              }}
-            />
-
-            {/* Article Schema */}
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(generateArticleSchema({
-                  post,
-                  postCategories,
-                  postTags,
-                  featuredImageUrl
-                }))
-              }}
-            />
-
-            {/* Organization Schema */}
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(generateOrganizationSchema())
-              }}
-            />
-
-            {/* WebPage Schema */}
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(generateWebPageSchema({
-                  post,
-                  postCategories,
-                  postTags,
-                  featuredImageUrl
-                }))
-              }}
-            />
 
             {/* Breadcrumb Navigation */}
             <nav aria-label="Breadcrumb" className="mb-6">
@@ -269,8 +272,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               {/* Article Header */}
               <header className="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-700">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4">
-                  <span dangerouslySetInnerHTML={{ __html: post.title?.rendered || 'Untitled Post' }} />
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4 break-words overflow-hidden">
+                  <span 
+                    className="break-words hyphens-auto"
+                    dangerouslySetInnerHTML={{ __html: post.title?.rendered || 'Untitled Post' }} 
+                  />
                 </h1>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 sm:space-x-4 text-muted-foreground">
@@ -382,7 +388,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <div className="pt-6 border-t border-gray-300">
                     <SocialShare 
                       post={post}
-                      url={`${process.env.NEXT_PUBLIC_SITE_URL}/${post.slug}`}
+                      url={frontendUrl}
                       layout="horizontal"
                       showLabels={true}
                       showCopyLink={true}

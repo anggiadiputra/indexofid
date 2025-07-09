@@ -6,7 +6,6 @@ import './globals.css';
 import MobileMenu, { DesktopNavigation } from '@/components/navigation/MobileMenu';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import MinionThemeToggle from '@/components/MinionThemeToggle';
-import PerformanceMonitor from '@/components/PerformanceMonitor';
 import AnalyticsWrapper from '@/components/AnalyticsWrapper';
 import { env } from '@/config/environment';
 
@@ -14,6 +13,8 @@ const sourceSans = Source_Sans_3({
   subsets: ['latin'],
   variable: '--font-source-sans',
   display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
 });
 
 export const metadata: Metadata = {
@@ -54,10 +55,10 @@ export const metadata: Metadata = {
     description: env.site.description,
     images: [
       {
-        url: 'https://jasakami.id/og-image.jpg',
+        url: `${env.site.url}${env.site.ogImage}`,
         width: 1200,
         height: 630,
-        alt: 'JasaKami.ID - WordPress Maintenance Services',
+        alt: `${env.site.name} - ${env.site.slogan || env.site.description}`,
       }
     ],
   },
@@ -65,26 +66,28 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${env.site.name}${env.site.slogan ? ' - ' + env.site.slogan : ''}`,
     description: env.site.description,
-    creator: '@jasakami_id',
-    images: ['https://jasakami.id/twitter-image.jpg'],
+    creator: env.schema.social.twitterHandle ? `@${env.schema.social.twitterHandle}` : '',
+    images: [`${env.site.url}${env.site.twitterImage}`],
   },
   other: {
     slogan: env.site.slogan,
+    'dns-prefetch': 'https://fonts.googleapis.com',
+    'preconnect': 'https://fonts.gstatic.com',
   },
   verification: {
     google: 'your-google-verification-code',
   },
   alternates: {
-    canonical: 'https://jasakami.id',
+    canonical: env.site.url,
     types: {
       'application/rss+xml': [
-        { url: '/feed.xml', title: 'JasaKami.ID RSS Feed' },
+        { url: '/feed.xml', title: env.site.rssTitle },
       ],
     },
-    languages: {
-      'id-ID': 'https://jasakami.id',
-      'en-US': 'https://jasakami.id/en',
-    },
+    languages: env.site.altLanguageUrl ? {
+      [env.schema.locale.language]: env.site.url,
+      'en-US': env.site.altLanguageUrl,
+    } : undefined,
   },
 };
 
@@ -385,9 +388,6 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
-
-          {/* Performance Monitor - Only shows in development */}
-          <PerformanceMonitor />
         </div>
         </ThemeProvider>
         <AnalyticsWrapper />

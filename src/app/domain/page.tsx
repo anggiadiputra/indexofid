@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 
-const API_URL = "https://api.rna.id/v1/account/prices";
+const API_URL = process.env.NEXT_PUBLIC_RNA_API_URL || "https://api.rna.id/v1/account/prices";
 
 export default function DomainPage() {
   const [extension, setExtension] = useState("");

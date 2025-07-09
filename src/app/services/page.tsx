@@ -1,8 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+// ISR configuration for services page (static content, revalidate less frequently)
+export const revalidate = 86400; // Revalidate every 24 hours
+
+import { env } from '@/config/environment';
+
 export const metadata: Metadata = {
-  title: 'Layanan WordPress Profesional | JasaKami.ID',
+  title: `Layanan WordPress Profesional | ${env.schema.organization.name}`,
   description: 'Solusi lengkap untuk website WordPress Anda: Jasa Migrasi, Pembersihan Malware, Setup VPS, dan Pengelolaan VPS dengan dukungan teknis profesional.',
 };
 
@@ -75,7 +80,7 @@ export default function ServicesPage() {
       {/* Why Choose Us */}
       <div className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-10">
-          Kenapa Harus JasaKami.ID?
+                      Kenapa Harus {env.schema.organization.name}?
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
@@ -124,7 +129,7 @@ export default function ServicesPage() {
             Konsultasi Gratis
           </Link>
           <a 
-            href="https://wa.me/your-number" 
+                          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || 'your-number'}`} 
             target="_blank"
             rel="noopener noreferrer" 
             className="inline-flex items-center justify-center rounded-lg bg-green-600 px-8 py-3 text-lg font-medium text-white shadow transition-colors hover:bg-green-700"

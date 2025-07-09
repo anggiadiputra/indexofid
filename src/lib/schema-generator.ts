@@ -41,11 +41,18 @@ export function generateBreadcrumbSchema({ post, postCategories, customBreadcrum
     return {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
+      "@id": buildAbsoluteUrl('/#breadcrumb'),
       "itemListElement": customBreadcrumbs.map((breadcrumb, index) => ({
         "@type": "ListItem",
+        "@id": buildAbsoluteUrl(`${breadcrumb.url}#breadcrumb-${index + 1}`),
         "position": index + 1,
         "name": breadcrumb.name,
-        "item": buildAbsoluteUrl(breadcrumb.url)
+        "item": {
+          "@type": "WebPage",
+          "@id": buildAbsoluteUrl(breadcrumb.url),
+          "url": buildAbsoluteUrl(breadcrumb.url),
+          "name": breadcrumb.name
+        }
       }))
     };
   }
@@ -54,18 +61,31 @@ export function generateBreadcrumbSchema({ post, postCategories, customBreadcrum
     return {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
+      "@id": buildAbsoluteUrl('/#breadcrumb'),
       "itemListElement": [
         {
           "@type": "ListItem",
+          "@id": buildAbsoluteUrl('/#breadcrumb-1'),
           "position": 1,
           "name": "Home",
-          "item": buildAbsoluteUrl('/')
+          "item": {
+            "@type": "WebPage",
+            "@id": buildAbsoluteUrl('/'),
+            "url": buildAbsoluteUrl('/'),
+            "name": "Home"
+          }
         },
         {
           "@type": "ListItem",
+          "@id": buildAbsoluteUrl('/blog#breadcrumb-2'),
           "position": 2,
           "name": "Blog",
-          "item": buildAbsoluteUrl('/blog')
+          "item": {
+            "@type": "WebPage",
+            "@id": buildAbsoluteUrl('/blog'),
+            "url": buildAbsoluteUrl('/blog'),
+            "name": "Blog"
+          }
         }
       ]
     };
@@ -74,29 +94,54 @@ export function generateBreadcrumbSchema({ post, postCategories, customBreadcrum
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    "@id": buildAbsoluteUrl(`/${post.slug}#breadcrumb`),
     "itemListElement": [
       {
         "@type": "ListItem",
+        "@id": buildAbsoluteUrl('/#breadcrumb-1'),
         "position": 1,
         "name": "Home",
-        "item": buildAbsoluteUrl('/')
+        "item": {
+          "@type": "WebPage",
+          "@id": buildAbsoluteUrl('/'),
+          "url": buildAbsoluteUrl('/'),
+          "name": "Home"
+        }
       },
       ...(postCategories.length > 0 ? [{
         "@type": "ListItem",
+        "@id": buildAbsoluteUrl(`/category/${postCategories[0].slug}#breadcrumb-2`),
         "position": 2,
         "name": postCategories[0].name.replace(/<[^>]*>/g, ''),
-        "item": buildAbsoluteUrl(`/category/${postCategories[0].slug}`)
+        "item": {
+          "@type": "WebPage",
+          "@id": buildAbsoluteUrl(`/category/${postCategories[0].slug}`),
+          "url": buildAbsoluteUrl(`/category/${postCategories[0].slug}`),
+          "name": postCategories[0].name.replace(/<[^>]*>/g, '')
+        }
       }] : [{
         "@type": "ListItem",
+        "@id": buildAbsoluteUrl('/blog#breadcrumb-2'),
         "position": 2,
         "name": "Blog",
-        "item": buildAbsoluteUrl('/blog')
+        "item": {
+          "@type": "WebPage",
+          "@id": buildAbsoluteUrl('/blog'),
+          "url": buildAbsoluteUrl('/blog'),
+          "name": "Blog"
+        }
       }]),
       {
         "@type": "ListItem",
+        "@id": buildAbsoluteUrl(`/${post.slug}#breadcrumb-${postCategories.length > 0 ? 3 : 3}`),
         "position": postCategories.length > 0 ? 3 : 3,
         "name": post.title?.rendered ? post.title.rendered.replace(/<[^>]*>/g, '') : 'Untitled Post',
-        "item": buildAbsoluteUrl(`/${post.slug}`)
+        "item": {
+          "@type": "WebPage",
+          "@id": buildAbsoluteUrl(`/${post.slug}`),
+          "url": buildAbsoluteUrl(`/${post.slug}`),
+          "name": post.title?.rendered ? post.title.rendered.replace(/<[^>]*>/g, '') : 'Untitled Post'
+        }
       }
     ]
   };
@@ -104,14 +149,34 @@ export function generateBreadcrumbSchema({ post, postCategories, customBreadcrum
 
 export function generateArticleSchema({ post, postCategories, postTags, featuredImageUrl }: SchemaGeneratorProps) {
   if (!post || !post.title?.rendered) {
+    console.log('[Schema Debug] No post or title found:', { hasPost: !!post, hasTitle: !!post?.title?.rendered });
     return null; // Return null if no post is provided or title is missing
   }
 
   const defaultImage = buildImageUrl(env.schema.business.defaultImage);
   const logoUrl = buildImageUrl(env.schema.business.logo);
   
+  console.log('[Schema Debug] Environment check:', {
+    siteName: env.site.name,
+    businessName: env.schema.business.name,
+    defaultImage,
+    logoUrl,
+    featuredImageUrl,
+    siteAuthor: env.site.author,
+    businessPhone: env.schema.business.phone,
+    businessEmail: env.schema.business.email
+  });
+  
   // Enhanced author schema - check for real author data from WordPress
   const authorData = post._embedded?.author?.[0];
+  console.log('[Schema Debug] Author data:', {
+    hasEmbedded: !!post._embedded,
+    hasAuthor: !!authorData,
+    authorName: authorData?.name,
+    authorSlug: authorData?.slug,
+    authorAvatar: authorData?.avatar_urls?.['96']
+  });
+  
   const authorSchema = authorData ? {
     "@type": "Person",
     "@id": buildAbsoluteUrl(`/author/${authorData.slug}`),
@@ -147,6 +212,13 @@ export function generateArticleSchema({ post, postCategories, postTags, featured
 
   // Enhanced image schema with proper ImageObject structure
   const primaryImage = featuredImageUrl || defaultImage;
+  console.log('[Schema Debug] Image selection:', {
+    featuredImageUrl,
+    defaultImage,
+    primaryImage,
+    hasValidImage: !!primaryImage && primaryImage !== '/default-article-image.jpg'
+  });
+  
   const imageSchema = {
     "@type": "ImageObject",
     "@id": `${buildAbsoluteUrl(`/${post.slug}`)}#primaryimage`,
@@ -185,6 +257,15 @@ export function generateArticleSchema({ post, postCategories, postTags, featured
       "contactType": "customer service"
     }
   };
+  
+  console.log('[Schema Debug] Final schema components:', {
+    hasAuthor: !!authorSchema.name,
+    hasImage: !!imageSchema.url,
+    hasPublisher: !!publisherSchema.name,
+    authorName: authorSchema.name,
+    imageUrl: imageSchema.url,
+    publisherName: publisherSchema.name
+  });
   
   return {
     "@context": "https://schema.org",

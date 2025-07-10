@@ -16,19 +16,25 @@ export default async function HomePage() {
   const baseUrl = env.site.url || env.wordpress.frontendDomain || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || 'http://localhost:3000';
   const cleanBaseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
 
+  // Get business name with fallbacks
+  const businessName = env.schema.business.name || 
+                      env.schema.business.alternateName || 
+                      env.site.name || 
+                      'IndexOf.ID';
+
   // Enhanced Organization Schema - Fully Configurable from Environment
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${cleanBaseUrl}/#organization`,
-    "name": env.schema.business.name || env.schema.business.alternateName,
-    "alternateName": env.schema.business.alternateName || env.schema.business.name,
+    "name": businessName,
+    "alternateName": env.schema.business.alternateName || businessName,
     "url": cleanBaseUrl,
     "logo": {
       "@type": "ImageObject",
       "@id": `${cleanBaseUrl}${env.site.logo}`,
       "url": `${cleanBaseUrl}${env.site.logo}`,
-      "caption": `${env.schema.business.name} Logo`
+      "caption": `${businessName} Logo`
     },
     "image": `${cleanBaseUrl}${env.site.logo}`,
     "description": env.schema.business.description,
@@ -70,17 +76,18 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${cleanBaseUrl}/#localbusiness`,
-    "name": env.schema.business.name || env.schema.business.alternateName,
-    "alternateName": env.schema.business.alternateName || env.schema.business.name,
+    "name": businessName,
+    "alternateName": env.schema.business.alternateName || businessName,
+    "legalName": businessName,
     "url": cleanBaseUrl,
     "logo": {
       "@type": "ImageObject",
       "@id": `${cleanBaseUrl}${env.site.logo}`,
       "url": `${cleanBaseUrl}${env.site.logo}`,
-      "caption": `${env.schema.business.name} Logo`
+      "caption": `${businessName} Logo`
     },
     "image": `${cleanBaseUrl}${env.site.logo}`,
-    "description": env.schema.business.description,
+    "description": env.schema.business.description || `${businessName} - Professional Digital Services`,
     "telephone": env.schema.business.phone || "",
     "email": env.schema.business.email || "",
     "address": {
@@ -115,7 +122,7 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${cleanBaseUrl}/#website`,
-    "name": `${env.schema.business.name} - ${env.site.description || env.schema.business.description}`,
+    "name": `${businessName} - ${env.site.description || env.schema.business.description}`,
     "url": cleanBaseUrl,
     "description": env.site.description || env.schema.business.description,
     "publisher": {

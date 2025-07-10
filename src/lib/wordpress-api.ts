@@ -1000,3 +1000,23 @@ export async function checkApiHealth(): Promise<{
 
   return results;
 } 
+
+/**
+ * Get total number of posts
+ */
+export async function getPostCount(): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE}/posts?per_page=1`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    // WordPress returns total posts count in headers
+    const totalPosts = parseInt(response.headers.get('X-WP-Total') || '0');
+    return totalPosts;
+  } catch (error) {
+    console.error('Error getting post count:', error);
+    return 0;
+  }
+} 

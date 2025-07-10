@@ -506,7 +506,7 @@ export default async function HomePage() {
                 </svg>
               </div>
               <blockquote className="text-gray-700 mb-4">
-                "IndexOf.ID sangat membantu dalam proses maintenance website kami. Tim yang professional dan response time yang cepat membuat kami sangat puas dengan layanannya."
+                &quot;IndexOf.ID sangat membantu dalam proses maintenance website kami. Tim yang professional dan response time yang cepat membuat kami sangat puas dengan layanannya.&quot;
               </blockquote>
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -526,7 +526,7 @@ export default async function HomePage() {
                 </svg>
               </div>
               <blockquote className="text-gray-700 mb-4">
-                "Proses migrasi website kami dari hosting lama ke VPS baru berjalan sangat smooth tanpa downtime. Recommended banget untuk yang butuh jasa migrasi website!"
+                &quot;Proses migrasi website kami dari hosting lama ke VPS baru berjalan sangat smooth tanpa downtime. Recommended banget untuk yang butuh jasa migrasi website!&quot;
               </blockquote>
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
@@ -546,7 +546,7 @@ export default async function HomePage() {
                 </svg>
               </div>
               <blockquote className="text-gray-700 mb-4">
-                "Setelah website kami terkena malware, IndexOf.ID berhasil membersihkannya dengan sempurna dan memberikan proteksi keamanan yang lebih baik. Thank you!"
+                &quot;Setelah website kami terkena malware, IndexOf.ID berhasil membersihkannya dengan sempurna dan memberikan proteksi keamanan yang lebih baik. Thank you!&quot;
               </blockquote>
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">

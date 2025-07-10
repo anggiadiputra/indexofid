@@ -19,9 +19,9 @@ export default async function HomePage() {
   // Enhanced Organization Schema - Fully Configurable from Environment
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "Organization",
     "@id": `${cleanBaseUrl}/#organization`,
-    "name": env.schema.business.name,
+    "name": env.schema.business.name || env.schema.business.alternateName,
     "alternateName": env.schema.business.alternateName || env.schema.business.name,
     "url": cleanBaseUrl,
     "logo": {
@@ -36,23 +36,23 @@ export default async function HomePage() {
     "foundingDate": env.schema.business.foundingDate,
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": env.schema.business.streetAddress,
-      "addressLocality": env.schema.business.addressLocality,
-      "addressRegion": env.schema.business.addressRegion,
-      "postalCode": env.schema.business.postalCode,
+      "streetAddress": env.schema.business.streetAddress || "",
+      "addressLocality": env.schema.business.addressLocality || "",
+      "addressRegion": env.schema.business.addressRegion || "",
+      "postalCode": env.schema.business.postalCode || "",
       "addressCountry": "ID"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": env.schema.business.latitude,
-      "longitude": env.schema.business.longitude
+      "latitude": env.schema.business.latitude || 0,
+      "longitude": env.schema.business.longitude || 0
     },
     "contactPoint": [
       {
         "@type": "ContactPoint",
         "@id": `${cleanBaseUrl}/#contact`,
-        "telephone": env.schema.business.phone,
-        "email": env.schema.business.email,
+        "telephone": env.schema.business.phone || "",
+        "email": env.schema.business.email || "",
         "contactType": "customer service",
         "availableLanguage": ["id", "en"],
         "hoursAvailable": {
@@ -63,28 +63,51 @@ export default async function HomePage() {
         }
       }
     ],
-    "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin, env.schema.social.instagram, env.schema.social.youtube].filter(Boolean),
+    "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin, env.schema.social.instagram, env.schema.social.youtube].filter(Boolean)
+  };
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `${cleanBaseUrl}/#localbusiness`,
+    "name": env.schema.business.name || env.schema.business.alternateName,
+    "alternateName": env.schema.business.alternateName || env.schema.business.name,
+    "url": cleanBaseUrl,
+    "logo": {
+      "@type": "ImageObject",
+      "@id": `${cleanBaseUrl}${env.site.logo}`,
+      "url": `${cleanBaseUrl}${env.site.logo}`,
+      "caption": `${env.schema.business.name} Logo`
+    },
+    "image": `${cleanBaseUrl}${env.site.logo}`,
+    "description": env.schema.business.description,
+    "telephone": env.schema.business.phone || "",
+    "email": env.schema.business.email || "",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": env.schema.business.streetAddress || "",
+      "addressLocality": env.schema.business.addressLocality || "",
+      "addressRegion": env.schema.business.addressRegion || "",
+      "postalCode": env.schema.business.postalCode || "",
+      "addressCountry": "ID"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": env.schema.business.latitude || 0,
+      "longitude": env.schema.business.longitude || 0
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "00:00",
+      "closes": "23:59"
+    },
     "priceRange": "$$",
     "currenciesAccepted": "IDR",
     "paymentAccepted": ["Cash", "Credit Card", "Bank Transfer"],
     "areaServed": {
       "@type": "Country",
-      "name": env.schema.locale.country
-    },
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Digital Services",
-      "itemListElement": env.schema.services.primary.map((service, index) => {
-        const serviceKey = `service${index + 1}` as keyof typeof env.schema.services.serviceDescriptions;
-        return {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": service || `Service ${index + 1}`,
-            "description": env.schema.services.serviceDescriptions[serviceKey] || `Professional ${(service || 'business').toLowerCase()} services`
-          }
-        };
-      })
+      "name": env.schema.locale.country || "Indonesia"
     }
   };
 
@@ -98,7 +121,7 @@ export default async function HomePage() {
     "publisher": {
       "@id": `${cleanBaseUrl}/#organization`
     },
-    "inLanguage": env.schema.locale.language,
+    "inLanguage": env.schema.locale.language || "id-ID",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -153,13 +176,13 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(websiteSchema)
+          __html: JSON.stringify(localBusinessSchema)
         }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(professionalServiceSchema)
+          __html: JSON.stringify(websiteSchema)
         }}
       />
       

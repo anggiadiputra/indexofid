@@ -45,37 +45,27 @@ async function generateSitemapIndex(request: Request) {
   const baseUrl = getBaseUrl(request);
 
   const sitemaps = [
-    // WordPress-style post sitemap
+    // WordPress-style sitemaps
     {
       url: `${baseUrl}/post-sitemap.xml`,
       lastmod: currentDate
     },
-    // Static sitemap
     {
-      url: `${baseUrl}/api/sitemap/static`,
+      url: `${baseUrl}/page-sitemap.xml`,
       lastmod: currentDate
     },
-    // Category sitemap
     {
-      url: `${baseUrl}/api/sitemap/categories`,
+      url: `${baseUrl}/category-sitemap.xml`,
       lastmod: currentDate
     },
-    // Tag sitemap
     {
-      url: `${baseUrl}/api/sitemap/tags`,
+      url: `${baseUrl}/tag-sitemap.xml`,
       lastmod: currentDate
     }
   ];
 
-  // Add post sitemaps
-  for (let i = 1; i <= sitemapCount; i++) {
-    sitemaps.push({
-      url: `${baseUrl}/api/sitemap/posts/${i}`,
-      lastmod: currentDate
-    });
-  }
-
   return `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${sitemaps.map(sitemap => `
   <sitemap>
@@ -246,37 +236,14 @@ async function generateTagsSitemap(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
-    const path = url.pathname;
-    const pathParts = path.split('/');
-    
-    let sitemap: string;
-    let cacheTime = 3600; // Default 1 hour cache
-
-    console.log('Sitemap request path:', path); // Debug log
-
-    // Generate appropriate sitemap based on path
-    if (path.includes('/posts/')) {
-      const page = parseInt(pathParts[pathParts.length - 1]) || 1;
-      console.log('Generating posts sitemap for page:', page); // Debug log
-      sitemap = await generateBlogPostsSitemap(page, request);
-      cacheTime = 1800; // 30 minutes cache for posts
-    } else if (path.includes('/categories')) {
-      sitemap = await generateCategoriesSitemap(request);
-    } else if (path.includes('/tags')) {
-      sitemap = await generateTagsSitemap(request);
-    } else if (path.includes('/static')) {
-      sitemap = generateStaticSitemap(request);
-      cacheTime = 86400; // 24 hours cache for static pages
-    } else {
-      sitemap = await generateSitemapIndex(request);
-    }
+    console.log('Generating sitemap at:', request.url);
+    const sitemap = await generateSitemapIndex(request);
 
     return new NextResponse(sitemap, {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-        'X-Robots-Tag': 'noindex',
+        'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+        'X-Robots-Tag': 'noindex'
       },
     });
   } catch (error) {

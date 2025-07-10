@@ -19,7 +19,7 @@ export default async function HomePage() {
   // Enhanced Organization Schema - Fully Configurable from Environment
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": env.schema.business.businessType,
+    "@type": "LocalBusiness",
     "@id": `${cleanBaseUrl}/#organization`,
     "name": env.schema.business.name,
     "alternateName": env.schema.business.alternateName || env.schema.business.name,
@@ -34,13 +34,18 @@ export default async function HomePage() {
     "description": env.schema.business.description,
     "slogan": env.schema.business.slogan || env.site.slogan,
     "foundingDate": env.schema.business.foundingDate,
-    "foundingLocation": {
-      "@type": "Place",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": env.schema.business.addressLocality,
-        "addressCountry": "ID"
-      }
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": env.schema.business.streetAddress,
+      "addressLocality": env.schema.business.addressLocality,
+      "addressRegion": env.schema.business.addressRegion,
+      "postalCode": env.schema.business.postalCode,
+      "addressCountry": "ID"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": env.schema.business.latitude,
+      "longitude": env.schema.business.longitude
     },
     "contactPoint": [
       {
@@ -58,50 +63,41 @@ export default async function HomePage() {
         }
       }
     ],
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": env.schema.business.streetAddress,
-      "addressLocality": env.schema.business.addressLocality,
-      "addressRegion": env.schema.business.addressRegion,
-      "postalCode": env.schema.business.postalCode,
-      "addressCountry": "ID"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": env.schema.business.latitude,
-      "longitude": env.schema.business.longitude
-    },
     "sameAs": [env.schema.social.facebook, env.schema.social.twitter, env.schema.social.linkedin, env.schema.social.instagram, env.schema.social.youtube].filter(Boolean),
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": cleanBaseUrl
-    },
-    "knowsAbout": env.schema.business.knowsAbout,
-    "expertise": env.schema.business.expertise,
+    "priceRange": "$$",
+    "currenciesAccepted": "IDR",
+    "paymentAccepted": ["Cash", "Credit Card", "Bank Transfer"],
     "areaServed": {
       "@type": "Country",
       "name": env.schema.locale.country
     },
-    "audience": {
-      "@type": "Audience",
-      "audienceType": env.schema.business.audienceType
-    },
-    "brand": {
-      "@type": "Brand",
-      "name": env.schema.business.name,
-      "logo": `${cleanBaseUrl}${env.site.logo}`
-    },
-    "parentOrganization": null,
-    "subOrganization": [],
-    "member": []
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Digital Services",
+      "itemListElement": env.schema.services.primary.map((service, index) => {
+        const serviceKey = `service${index + 1}` as keyof typeof env.schema.services.serviceDescriptions;
+        return {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": service || `Service ${index + 1}`,
+            "description": env.schema.services.serviceDescriptions[serviceKey] || `Professional ${(service || 'business').toLowerCase()} services`
+          }
+        };
+      })
+    }
   };
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${cleanBaseUrl}/#website`,
     "name": `${env.schema.business.name} - ${env.site.description || env.schema.business.description}`,
     "url": cleanBaseUrl,
     "description": env.site.description || env.schema.business.description,
+    "publisher": {
+      "@id": `${cleanBaseUrl}/#organization`
+    },
     "inLanguage": env.schema.locale.language,
     "potentialAction": {
       "@type": "SearchAction",
@@ -118,18 +114,16 @@ export default async function HomePage() {
     "@type": "ProfessionalService",
     "@id": `${cleanBaseUrl}/#service`,
     "name": env.schema.business.name,
-    "alternateName": env.schema.business.alternateName || `${env.schema.business.name} Services`,
     "url": cleanBaseUrl,
-    "logo": `${cleanBaseUrl}${env.site.logo}`,
     "image": `${cleanBaseUrl}${env.site.logo}`,
     "description": env.schema.business.description,
-    "slogan": env.schema.business.slogan || env.site.slogan,
-    "foundingDate": env.schema.business.foundingDate,
-    "serviceType": env.schema.services.primary.length > 0 ? env.schema.services.primary : [
-      "Technology Services",
-      "Web Development", 
-      "Digital Solutions"
-    ],
+    "provider": {
+      "@id": `${cleanBaseUrl}/#organization`
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": env.schema.locale.country
+    },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Digital Services",
@@ -144,38 +138,6 @@ export default async function HomePage() {
           }
         };
       })
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": env.schema.business.streetAddress,
-      "addressLocality": env.schema.business.addressLocality,
-      "addressRegion": env.schema.business.addressRegion,
-      "postalCode": env.schema.business.postalCode,
-      "addressCountry": "ID"
-    },
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": env.schema.business.phone,
-      "email": env.schema.business.email,
-      "contactType": "customer service"
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      "opens": "00:00",
-      "closes": "23:59"
-    },
-    "areaServed": {
-      "@type": "Country",
-      "name": env.schema.locale.country
-    },
-    "audience": {
-      "@type": "Audience",
-      "audienceType": env.schema.business.audienceType
-    },
-    "knowsAbout": env.schema.business.knowsAbout,
-    "parentOrganization": {
-      "@id": `${cleanBaseUrl}/#organization`
     }
   };
 

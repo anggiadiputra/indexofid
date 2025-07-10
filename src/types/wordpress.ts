@@ -7,6 +7,58 @@ export interface WordPressBlock {
   innerContent?: string[];
 }
 
+// WordPress Page Types
+export interface WordPressPage {
+  id: number;
+  date: string;
+  date_gmt: string;
+  guid: {
+    rendered: string;
+  };
+  modified: string;
+  modified_gmt: string;
+  slug: string;
+  status: 'publish' | 'future' | 'draft' | 'pending' | 'private';
+  type: 'page';
+  link: string;
+  title: {
+    rendered: string;
+  };
+  content: {
+    rendered: string;
+    protected: boolean;
+  };
+  excerpt: {
+    rendered: string;
+    protected: boolean;
+  };
+  author: number;
+  featured_media: number;
+  parent: number;
+  menu_order: number;
+  comment_status: 'open' | 'closed';
+  ping_status: 'open' | 'closed';
+  template: string;
+  meta: Record<string, any>;
+  blocks?: WordPressBlock[];
+  _embedded?: {
+    'wp:featuredmedia'?: WordPressMedia[];
+    author?: WordPressAuthor[];
+    replies?: Array<any>;
+  };
+  _links: {
+    self: Array<{ href: string }>;
+    collection: Array<{ href: string }>;
+    about: Array<{ href: string }>;
+    author: Array<{ embeddable: boolean; href: string }>;
+    replies: Array<{ embeddable: boolean; href: string }>;
+    'version-history': Array<{ count: number; href: string }>;
+    'predecessor-version': Array<{ id: number; href: string }>;
+    'wp:attachment': Array<{ href: string }>;
+    curies: Array<{ name: string; href: string; templated: boolean }>;
+  };
+}
+
 // WordPress Post Types
 export interface WordPressPost {
   id: number;

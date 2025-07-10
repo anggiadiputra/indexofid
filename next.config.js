@@ -70,6 +70,25 @@ const nextConfig = {
 
   transpilePackages: ['wp-block-to-html'],
 
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/post-sitemap.xml',
+          destination: '/post-sitemap.xml',
+        },
+        {
+          source: '/page-sitemap.xml',
+          destination: '/page-sitemap.xml',
+        },
+        {
+          source: '/category-sitemap.xml',
+          destination: '/category-sitemap.xml',
+        },
+      ],
+    };
+  },
+
   async headers() {
     return [
       {

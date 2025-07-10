@@ -6,7 +6,6 @@ import { headers } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
 const POSTS_PER_SITEMAP = 1000;
-const baseUrl = env.site.url;
 
 interface BlogPostMetadata {
   url: string;
@@ -30,15 +29,27 @@ interface PostImage {
   caption?: string;
 }
 
+function getBaseUrl(request: Request) {
+  const url = new URL(request.url);
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  return `${protocol}://${url.host}`;
+}
+
 /**
  * Generate sitemap index
  */
-async function generateSitemapIndex() {
+async function generateSitemapIndex(request: Request) {
   const postCount = await getPostCount();
   const sitemapCount = Math.ceil(postCount / POSTS_PER_SITEMAP);
   const currentDate = new Date().toISOString();
+  const baseUrl = getBaseUrl(request);
 
   const sitemaps = [
+    // WordPress-style post sitemap
+    {
+      url: `${baseUrl}/post-sitemap.xml`,
+      lastmod: currentDate
+    },
     // Static sitemap
     {
       url: `${baseUrl}/api/sitemap/static`,
@@ -77,8 +88,9 @@ async function generateSitemapIndex() {
 /**
  * Generate static pages sitemap
  */
-function generateStaticSitemap() {
+function generateStaticSitemap(request: Request) {
   const currentDate = new Date().toISOString();
+  const baseUrl = getBaseUrl(request);
   const staticPages = [
     { url: '', priority: '1.0', changefreq: 'daily' },
     { url: '/blog', priority: '0.9', changefreq: 'daily' },
@@ -106,7 +118,7 @@ function generateStaticSitemap() {
 /**
  * Extract post metadata for sitemap
  */
-function extractPostMetadata(post: any): BlogPostMetadata {
+function extractPostMetadata(post: any, baseUrl: string): BlogPostMetadata {
   const featuredImage = post._embedded?.['wp:featuredmedia']?.[0];
   const categories = post._embedded?.['wp:term']?.find((terms: any[]) => 
     terms?.[0]?.taxonomy === 'category'
@@ -158,9 +170,10 @@ function extractPostMetadata(post: any): BlogPostMetadata {
 /**
  * Generate blog posts sitemap with enhanced metadata
  */
-async function generateBlogPostsSitemap(page: number) {
+async function generateBlogPostsSitemap(page: number, request: Request) {
+  const baseUrl = getBaseUrl(request);
   const posts = await getAllPosts(page, POSTS_PER_SITEMAP);
-  const postsMetadata = posts.map(extractPostMetadata);
+  const postsMetadata = posts.map(post => extractPostMetadata(post, baseUrl));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -194,9 +207,10 @@ async function generateBlogPostsSitemap(page: number) {
 /**
  * Generate categories sitemap
  */
-async function generateCategoriesSitemap() {
+async function generateCategoriesSitemap(request: Request) {
   const categories = await getAllCategories();
   const currentDate = new Date().toISOString();
+  const baseUrl = getBaseUrl(request);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -213,9 +227,10 @@ async function generateCategoriesSitemap() {
 /**
  * Generate tags sitemap
  */
-async function generateTagsSitemap() {
+async function generateTagsSitemap(request: Request) {
   const tags = await getAllTags();
   const currentDate = new Date().toISOString();
+  const baseUrl = getBaseUrl(request);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -231,7 +246,6 @@ async function generateTagsSitemap() {
 
 export async function GET(request: Request) {
   try {
-    const headersList = headers();
     const url = new URL(request.url);
     const path = url.pathname;
     const pathParts = path.split('/');
@@ -239,30 +253,39 @@ export async function GET(request: Request) {
     let sitemap: string;
     let cacheTime = 3600; // Default 1 hour cache
 
+    console.log('Sitemap request path:', path); // Debug log
+
     // Generate appropriate sitemap based on path
     if (path.includes('/posts/')) {
       const page = parseInt(pathParts[pathParts.length - 1]) || 1;
-      sitemap = await generateBlogPostsSitemap(page);
+      console.log('Generating posts sitemap for page:', page); // Debug log
+      sitemap = await generateBlogPostsSitemap(page, request);
       cacheTime = 1800; // 30 minutes cache for posts
     } else if (path.includes('/categories')) {
-      sitemap = await generateCategoriesSitemap();
+      sitemap = await generateCategoriesSitemap(request);
     } else if (path.includes('/tags')) {
-      sitemap = await generateTagsSitemap();
+      sitemap = await generateTagsSitemap(request);
     } else if (path.includes('/static')) {
-      sitemap = generateStaticSitemap();
+      sitemap = generateStaticSitemap(request);
       cacheTime = 86400; // 24 hours cache for static pages
     } else {
-      sitemap = await generateSitemapIndex();
+      sitemap = await generateSitemapIndex(request);
     }
 
     return new NextResponse(sitemap, {
       headers: {
-        'Content-Type': 'application/xml',
+        'Content-Type': 'application/xml; charset=utf-8',
         'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+        'X-Robots-Tag': 'noindex',
       },
     });
   } catch (error) {
     console.error('Error generating sitemap:', error);
-    return new NextResponse('Error generating sitemap', { status: 500 });
+    return new NextResponse('Error generating sitemap', { 
+      status: 500,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8'
+      }
+    });
   }
 } 

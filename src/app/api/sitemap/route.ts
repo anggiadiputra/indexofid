@@ -8,6 +8,28 @@ export const dynamic = 'force-dynamic';
 const POSTS_PER_SITEMAP = 1000;
 const baseUrl = env.site.url;
 
+interface BlogPostMetadata {
+  url: string;
+  lastmod: string;
+  images: Array<{
+    url: string;
+    title: string;
+    caption?: string;
+  }>;
+  categories: string[];
+  tags: string[];
+  author?: {
+    name: string;
+    url: string;
+  };
+}
+
+interface PostImage {
+  url: string;
+  title: string;
+  caption?: string;
+}
+
 /**
  * Generate sitemap index
  */
@@ -82,29 +104,90 @@ function generateStaticSitemap() {
 }
 
 /**
- * Generate posts sitemap
+ * Extract post metadata for sitemap
  */
-async function generatePostsSitemap(page: number) {
+function extractPostMetadata(post: any): BlogPostMetadata {
+  const featuredImage = post._embedded?.['wp:featuredmedia']?.[0];
+  const categories = post._embedded?.['wp:term']?.find((terms: any[]) => 
+    terms?.[0]?.taxonomy === 'category'
+  ) || [];
+  const tags = post._embedded?.['wp:term']?.find((terms: any[]) => 
+    terms?.[0]?.taxonomy === 'post_tag'
+  ) || [];
+  const author = post._embedded?.author?.[0];
+
+  const images: PostImage[] = [];
+  
+  // Add featured image if exists
+  if (featuredImage?.source_url) {
+    images.push({
+      url: featuredImage.source_url,
+      title: featuredImage.title?.rendered || post.title.rendered,
+      caption: featuredImage.caption?.rendered
+    });
+  }
+
+  // Extract images from content
+  const contentImages = post.content.rendered.match(/<img[^>]+src="([^">]+)"/g);
+  if (contentImages) {
+    contentImages.forEach((img: string) => {
+      const src = img.match(/src="([^">]+)"/)?.[1];
+      const alt = img.match(/alt="([^">]+)"/)?.[1];
+      if (src && !images.some(image => image.url === src)) {
+        images.push({
+          url: src,
+          title: alt || post.title.rendered
+        });
+      }
+    });
+  }
+
+  return {
+    url: `${baseUrl}/${post.slug}`,
+    lastmod: new Date(post.modified).toISOString(),
+    images,
+    categories: categories.map((cat: any) => cat.name),
+    tags: tags.map((tag: any) => tag.name),
+    author: author ? {
+      name: author.name,
+      url: `${baseUrl}/author/${author.slug}`
+    } : undefined
+  };
+}
+
+/**
+ * Generate blog posts sitemap with enhanced metadata
+ */
+async function generateBlogPostsSitemap(page: number) {
   const posts = await getAllPosts(page, POSTS_PER_SITEMAP);
+  const postsMetadata = posts.map(extractPostMetadata);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  ${posts.map(post => {
-    const featuredImage = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
-    return `
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  ${postsMetadata.map(post => `
   <url>
-    <loc>${baseUrl}/${post.slug}</loc>
-    <lastmod>${new Date(post.modified).toISOString()}</lastmod>
+    <loc>${post.url}</loc>
+    <lastmod>${post.lastmod}</lastmod>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
-    ${featuredImage ? `
+    ${post.images.map(image => `
     <image:image>
-      <image:loc>${featuredImage}</image:loc>
-      <image:title>${post.title.rendered.replace(/[<>]/g, '')}</image:title>
-    </image:image>` : ''}
-  </url>`;
-  }).join('')}
+      <image:loc>${image.url}</image:loc>
+      <image:title>${image.title.replace(/[<>]/g, '')}</image:title>
+      ${image.caption ? `<image:caption>${image.caption.replace(/[<>]/g, '')}</image:caption>` : ''}
+    </image:image>`).join('')}
+    <news:news>
+      <news:publication>
+        <news:name>${env.site.name}</news:name>
+        <news:language>${env.schema.locale.language || 'id'}</news:language>
+      </news:publication>
+      <news:publication_date>${post.lastmod}</news:publication_date>
+      <news:title>${post.url.split('/').pop()?.replace(/-/g, ' ') || ''}</news:title>
+      ${post.author ? `<news:keywords>${[...post.categories, ...post.tags].join(', ')}</news:keywords>` : ''}
+    </news:news>
+  </url>`).join('')}
 </urlset>`;
 }
 
@@ -159,7 +242,7 @@ export async function GET(request: Request) {
     // Generate appropriate sitemap based on path
     if (path.includes('/posts/')) {
       const page = parseInt(pathParts[pathParts.length - 1]) || 1;
-      sitemap = await generatePostsSitemap(page);
+      sitemap = await generateBlogPostsSitemap(page);
       cacheTime = 1800; // 30 minutes cache for posts
     } else if (path.includes('/categories')) {
       sitemap = await generateCategoriesSitemap();

@@ -40,42 +40,74 @@ export async function GET(request: Request) {
     const baseUrl = getBaseUrl(request);
     console.log('Base URL:', baseUrl);
 
+    // Validate WordPress API URL
+    if (!env.wordpress.apiUrl) {
+      console.error('WordPress API URL is not configured');
+      throw new Error('WordPress API URL is not configured. Please check your environment variables.');
+    }
+
     const apiUrl = `${env.wordpress.apiUrl}/categories?per_page=100&_fields=id,name,slug,count`;
     console.log('Fetching categories from:', apiUrl);
 
-    // Fetch categories from WordPress API
-    const response = await fetch(apiUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'NextJS-App/1.0',
-      },
-    });
+    // Add timeout to the fetch request
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API response error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
+    try {
+      // Fetch categories from WordPress API
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'NextJS-App/1.0',
+        },
+        signal: controller.signal
       });
-      throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
-    }
 
-    const categories = await response.json();
-    console.log('Fetched categories:', {
-      count: categories.length,
-      data: JSON.stringify(categories, null, 2)
-    });
+      clearTimeout(timeout);
 
-    if (!Array.isArray(categories)) {
-      console.error('Categories is not an array:', categories);
-      throw new Error('Invalid categories response: expected array');
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API response error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
+      }
 
-    const categoriesMetadata = categories.map((category: WordPressCategory) => extractCategoryMetadata(category, baseUrl));
-    console.log('Processed categories metadata:', JSON.stringify(categoriesMetadata, null, 2));
+      const categories = await response.json();
+      console.log('Fetched categories:', {
+        count: categories.length,
+        data: JSON.stringify(categories, null, 2)
+      });
 
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+      if (!Array.isArray(categories)) {
+        console.error('Categories is not an array:', categories);
+        throw new Error('Invalid categories response: expected array');
+      }
+
+      // Handle empty categories
+      if (categories.length === 0) {
+        console.log('No categories found, returning empty sitemap');
+        const emptySitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+</urlset>`;
+
+        return new NextResponse(emptySitemap, {
+          headers: {
+            'Content-Type': 'application/xml; charset=utf-8',
+            'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+            'X-Robots-Tag': 'noindex'
+          },
+        });
+      }
+
+      const categoriesMetadata = categories.map((category: WordPressCategory) => extractCategoryMetadata(category, baseUrl));
+      console.log('Processed categories metadata:', JSON.stringify(categoriesMetadata, null, 2));
+
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${categoriesMetadata.map((category: CategoryMetadata) => `
@@ -87,14 +119,20 @@ export async function GET(request: Request) {
   </url>`).join('')}
 </urlset>`;
 
-    console.log('Category sitemap generated successfully');
-    return new NextResponse(sitemap, {
-      headers: {
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=1800, s-maxage=1800',
-        'X-Robots-Tag': 'noindex'
-      },
-    });
+      console.log('Category sitemap generated successfully');
+      return new NextResponse(sitemap, {
+        headers: {
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+          'X-Robots-Tag': 'noindex'
+        },
+      });
+    } catch (fetchError: unknown) {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        throw new Error('API request timed out after 10 seconds');
+      }
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Error generating category sitemap:', error);
     if (error instanceof Error) {

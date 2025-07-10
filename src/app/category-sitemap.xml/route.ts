@@ -21,20 +21,30 @@ function getBaseUrl(request: Request) {
  * Extract category metadata for sitemap
  */
 function extractCategoryMetadata(category: WordPressCategory, baseUrl: string): CategoryMetadata {
-  return {
-    url: `${baseUrl}/category/${category.slug}`,
-    lastmod: new Date().toISOString(), // Categories don't have modified date, use current
-    postCount: category.count || 0
-  };
+  try {
+    return {
+      url: `${baseUrl}/category/${category.slug}`,
+      lastmod: new Date().toISOString(), // Categories don't have modified date, use current
+      postCount: category.count || 0
+    };
+  } catch (error) {
+    console.error('Error extracting category metadata:', error);
+    console.error('Category object:', JSON.stringify(category, null, 2));
+    throw error;
+  }
 }
 
 export async function GET(request: Request) {
   try {
     console.log('Generating category sitemap at:', request.url);
     const baseUrl = getBaseUrl(request);
+    console.log('Base URL:', baseUrl);
+
+    const apiUrl = `${env.wordpress.apiUrl}/categories?per_page=100&_fields=id,name,slug,count`;
+    console.log('Fetching categories from:', apiUrl);
 
     // Fetch categories from WordPress API
-    const response = await fetch(`${env.wordpress.apiUrl}/categories?per_page=100&_fields=id,name,slug,count`, {
+    const response = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'NextJS-App/1.0',
@@ -42,12 +52,28 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API response error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
       throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
     }
 
     const categories = await response.json();
-    console.log('Fetched categories:', categories.length);
+    console.log('Fetched categories:', {
+      count: categories.length,
+      data: JSON.stringify(categories, null, 2)
+    });
+
+    if (!Array.isArray(categories)) {
+      console.error('Categories is not an array:', categories);
+      throw new Error('Invalid categories response: expected array');
+    }
+
     const categoriesMetadata = categories.map((category: WordPressCategory) => extractCategoryMetadata(category, baseUrl));
+    console.log('Processed categories metadata:', JSON.stringify(categoriesMetadata, null, 2));
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
@@ -71,7 +97,14 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Error generating category sitemap:', error);
-    return new NextResponse('Error generating sitemap', { 
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
+    return new NextResponse(`Error generating sitemap: ${error instanceof Error ? error.message : 'Unknown error'}`, { 
       status: 500,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8'

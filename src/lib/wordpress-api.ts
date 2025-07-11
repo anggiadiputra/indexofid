@@ -42,20 +42,7 @@ Langkah-langkah perbaikan:
 Untuk referensi lengkap, lihat file env.example
   `;
   
-  console.error(`[${envType}] ${errorMessage}`);
-  console.error('Current values:');
-  console.error('- API_BASE:', API_BASE);
-  console.error('- WORDPRESS_API_URL:', process.env.WORDPRESS_API_URL);
-  console.error('- NEXT_PUBLIC_WORDPRESS_API_URL:', process.env.NEXT_PUBLIC_WORDPRESS_API_URL);
-  console.error('- NEXT_PUBLIC_FALLBACK_API_URL:', process.env.NEXT_PUBLIC_FALLBACK_API_URL);
   throw new Error(errorMessage);
-}
-
-console.log(`[WordPress API] Initialized with base URL: ${API_BASE} (${typeof window !== 'undefined' ? 'client-side' : 'server-side'})`);
-
-// Log fallback configuration 
-if (FALLBACK_API_BASE && FALLBACK_API_BASE !== API_BASE) {
-  console.log(`[WordPress API] Fallback endpoint: ${FALLBACK_API_BASE}`);
 }
 
 // Error handling class
@@ -370,83 +357,24 @@ export async function getAllPosts(
 
 // Get single post by slug
 export async function getPostBySlug(slug: string): Promise<WordPressPost | null> {
-  const cacheKey = `post_slug_${slug}`;
-  
-  // Debug log for troubleshooting
-  console.log(`[getPostBySlug] Fetching post with slug: ${slug}, API_BASE: ${API_BASE}`);
-  
-  // Check cache first
-  const cached = cacheManager.get<WordPressPost>(cacheKey);
-  if (cached) {
-    console.log(`[getPostBySlug] Cache hit for slug: ${slug}`);
-    return cached;
-  }
+  if (!slug) return null;
+
+  const url = `${API_BASE}/posts?slug=${slug}&_embed=true`;
+  const cacheKey = `post-by-slug-${slug}`;
 
   try {
-    const url = `${API_BASE}/posts?slug=${slug}&_embed=true`;
-    console.log(`[getPostBySlug] Making API request to: ${url}`);
-    
     const posts = await fetchWithCache<WordPressPost[]>(
-      url, 
-      cacheKey, 
-      CACHE_TTL.SINGLE_POST,
-      true
+      url,
+      cacheKey,
+      CACHE_TTL.SINGLE_POST
     );
 
-    console.log(`[getPostBySlug] API response for ${slug}: ${posts ? posts.length : 0} posts found`);
-
-    if (!posts.length) {
-      console.warn(`[getPostBySlug] No posts found for slug: ${slug}`);
-      return null;
-    }
-
-    const post = {
-      ...posts[0],
-      blocks: parseContentToBlocks(posts[0].content.rendered),
-    };
-    
-    // Cache by ID as well
-    cacheManager.cachePost(post, CACHE_TTL.SINGLE_POST);
-
-    return post;
+    return posts && posts.length > 0 ? posts[0] : null;
   } catch (error) {
-    console.error(`[getPostBySlug] Error fetching post with slug ${slug}:`, error);
-    // Try alternative API URL as fallback
-    try {
-      const alternativeUrl = `https://www.jasakami.id/wp-json/wp/v2/posts?slug=${slug}&_embed=true`;
-      console.log(`[getPostBySlug] Trying alternative URL: ${alternativeUrl}`);
-      
-      const response = await fetch(alternativeUrl, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'NextJS-App/1.0',
-        },
-        next: { revalidate: 86400 }
-      });
-      
-      if (!response.ok) {
-        console.error(`[getPostBySlug] Alternative request failed: ${response.status}`);
-        return null;
-      }
-      
-      const posts = await response.json();
-      if (!posts.length) {
-        console.warn(`[getPostBySlug] No posts found in alternative request for slug: ${slug}`);
-        return null;
-      }
-      
-      const post = {
-        ...posts[0],
-        blocks: parseContentToBlocks(posts[0].content.rendered),
-      };
-      
-      // Cache the result
-      cacheManager.cachePost(post, CACHE_TTL.SINGLE_POST);
-      return post;
-    } catch (fallbackError) {
-      console.error(`[getPostBySlug] Fallback request also failed for slug ${slug}:`, fallbackError);
+    if (error instanceof WordPressApiError && error.statusCode === 404) {
       return null;
     }
+    throw error;
   }
 }
 

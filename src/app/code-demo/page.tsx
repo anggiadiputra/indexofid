@@ -285,7 +285,7 @@ export default function CodeDemoPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                 Fibonacci calculation dengan modern ES6+ syntax:
               </p>
-              <CodeBlock language="javascript" showLineNumbers={true}>
+              <CodeBlock language="javascript">
                 {sampleCode.javascript}
               </CodeBlock>
             </div>
@@ -298,7 +298,7 @@ export default function CodeDemoPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                 Object-oriented programming dengan classes dan methods:
               </p>
-              <CodeBlock language="python" showLineNumbers={true}>
+              <CodeBlock language="python">
                 {sampleCode.python}
               </CodeBlock>
             </div>
@@ -311,7 +311,7 @@ export default function CodeDemoPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                 Custom post type registration dan meta boxes:
               </p>
-              <CodeBlock language="php" showLineNumbers={true}>
+              <CodeBlock language="php">
                 {sampleCode.php}
               </CodeBlock>
             </div>
@@ -324,7 +324,7 @@ export default function CodeDemoPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                 Modern CSS dengan custom properties dan responsive design:
               </p>
-              <CodeBlock language="css" showLineNumbers={true}>
+              <CodeBlock language="css">
                 {sampleCode.css}
               </CodeBlock>
             </div>
@@ -337,7 +337,7 @@ export default function CodeDemoPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                 WordPress installation automation script:
               </p>
-              <CodeBlock language="bash" showLineNumbers={true}>
+              <CodeBlock language="bash">
                 {sampleCode.bash}
               </CodeBlock>
             </div>

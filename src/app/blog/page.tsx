@@ -10,13 +10,13 @@ import {
 } from '@/lib/wordpress-api';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import Link from 'next/link';
-import Image from 'next/image';
 import { serverCache } from '@/lib/server-cache';
 import { SinglePostSkeleton } from '@/components/BlogPostSkeleton';
 import { PostViewCount } from '@/components/PostViews';
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { env } from '@/config/environment';
+import OptimizedImage from '@/components/ImageOptimized';
 
 // Dynamic imports for non-critical components
 const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
@@ -48,9 +48,16 @@ interface BlogPageProps {
 function getFeaturedImageUrl(post: WordPressPost): string | null {
   if (post.featured_media && post._embedded?.['wp:featuredmedia']?.[0]) {
     const media = post._embedded['wp:featuredmedia'][0];
-    return media.media_details?.sizes?.large?.source_url || 
-           media.media_details?.sizes?.medium_large?.source_url || 
-           media.source_url;
+    if (media.media_details?.sizes) {
+      const sizes = media.media_details.sizes;
+      // Try smaller sizes first for thumbnails
+      return sizes.medium?.source_url || 
+             sizes.thumbnail?.source_url || 
+             sizes.medium_large?.source_url || 
+             sizes.large?.source_url || 
+             media.source_url;
+    }
+    return media.source_url;
   }
   return null;
 }
@@ -311,23 +318,16 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                         <div className="flex flex-col md:flex-row min-h-0">
                           {/* Featured Image - Left side */}
                           <div className="md:w-80 md:max-w-80 flex-shrink-0 p-4">
-                            <div className="aspect-video md:aspect-[4/3] md:h-48 relative overflow-hidden rounded-lg">
-                              {featuredImageUrl ? (
-                                <Image
-                                  src={featuredImageUrl}
-                                  alt={post.title?.rendered || 'Article Image'}
-                                  fill
-                                  className="object-cover"
-                                  priority={index < 4}
-                                  sizes="(max-width: 768px) 100vw, 320px"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                                  <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                  </svg>
-                                </div>
-                              )}
+                            <div className="w-full h-48 relative overflow-hidden rounded-lg">
+                              <OptimizedImage
+                                post={post}
+                                alt={post.title?.rendered || 'Article Image'}
+                                width={320}
+                                height={192}
+                                className="rounded-lg"
+                                priority={index < 4}
+                                sizes="(max-width: 768px) 100vw, 320px"
+                              />
                             </div>
                           </div>
 

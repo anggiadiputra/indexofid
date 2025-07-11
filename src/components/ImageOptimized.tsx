@@ -20,18 +20,18 @@ interface OptimizedImageProps {
 
 // Generate blur data URL for better UX
 const generateBlurDataURL = (width: number, height: number) => {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, '#3B82F6');
-    gradient.addColorStop(1, '#1E40AF');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-  }
-  return canvas.toDataURL();
+  // Return a static data URL for server-side rendering
+  return `data:image/svg+xml;base64,${Buffer.from(`
+    <svg width="${width}" height="${height}" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop stop-color="#3B82F6" offset="0%"/>
+          <stop stop-color="#1E40AF" offset="100%"/>
+        </linearGradient>
+      </defs>
+      <rect width="${width}" height="${height}" fill="url(#g)"/>
+    </svg>
+  `).toString('base64')}`;
 };
 
 // Get optimized image source from WordPress media
@@ -85,7 +85,7 @@ export default function OptimizedImage({
 
   if (!imageSrc || imageError) {
     return (
-      <div className={`relative flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 ${className}`}>
+      <div className={`relative flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 ${className}`} style={fill ? { position: 'absolute', inset: 0 } : { width, height }}>
         <svg className="w-16 h-16 text-blue-400 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
@@ -94,7 +94,7 @@ export default function OptimizedImage({
   }
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden ${className}`} style={fill ? { position: 'absolute', inset: 0 } : { width, height }}>
       {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 animate-pulse z-10 flex items-center justify-center">
@@ -105,10 +105,9 @@ export default function OptimizedImage({
       <Image
         src={imageSrc}
         alt={alt}
-        width={fill ? undefined : width}
-        height={fill ? undefined : height}
-        fill={fill}
-        className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} object-cover`}
+        width={width}
+        height={height}
+        className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} object-cover w-full h-full`}
         priority={priority}
         sizes={sizes}
         quality={quality}

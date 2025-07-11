@@ -273,7 +273,7 @@ export async function getAllPosts(
     page: page.toString(),
     per_page: perPage.toString(),
     _embed: 'true',
-    _fields: 'id,title,slug,content,excerpt,date,modified,_links,_embedded',
+    _fields: 'id,title,slug,content,excerpt,date,modified,featured_media,_links,_embedded,media_details,source_url',
     orderby: 'date',
     order: 'desc',
     status: 'publish'
@@ -310,6 +310,12 @@ export async function getAllPosts(
     return processedPosts;
   } catch (error) {
     console.error('Error fetching posts:', error);
+    
+    // Clear cache on error to prevent stale data
+    cache.delete(cacheKey);
+    if (typeof window !== 'undefined' && enhancedBrowserCache) {
+      enhancedBrowserCache.delete(cacheKey);
+    }
     
     // Try fallback API if primary fails
     if (API_BASE !== FALLBACK_API_BASE) {

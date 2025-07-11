@@ -136,11 +136,11 @@ export default function CodeBlock({
       <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
         <div className="flex items-center space-x-2">
           <span className="text-sm">{getLanguageIcon(detectedLanguage)}</span>
-          <span className="text-sm font-medium text-gray-300 capitalize">
+          <span className="text-sm font-medium text-gray-200 capitalize">
             {detectedLanguage}
           </span>
           {lines.length > 1 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-400">
               {lines.length} lines
             </span>
           )}
@@ -151,7 +151,7 @@ export default function CodeBlock({
           className={`flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
             copied 
               ? 'bg-green-600 text-white' 
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
           title={copied ? 'Copied!' : 'Copy to clipboard'}
         >
@@ -176,14 +176,14 @@ export default function CodeBlock({
       {/* Code content */}
       <div className="relative">
         <pre className={`p-4 overflow-x-auto text-sm leading-relaxed ${showLineNumbers ? 'pl-12' : ''}`}>
-          <code ref={codeRef} className={`language-${detectedLanguage}`}>
+          <code ref={codeRef} className={`language-${detectedLanguage} text-gray-100`}>
             {children}
           </code>
         </pre>
         
         {/* Line numbers */}
         {showLineNumbers && lines.length > 1 && (
-          <div className="absolute left-0 top-0 p-4 pr-2 text-gray-500 text-sm leading-relaxed select-none">
+          <div className="absolute left-0 top-0 p-4 pr-2 text-gray-400 text-sm leading-relaxed select-none">
             {lines.map((_, index) => (
               <div key={index} className="text-right">
                 {index + 1}

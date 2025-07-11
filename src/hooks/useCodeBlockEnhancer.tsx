@@ -151,11 +151,13 @@ export function EnhancedContent({
   return (
     <div 
       ref={containerRef}
-      className={`prose prose-lg max-w-none ${className}`}
+      className={`prose prose-lg max-w-none dark:prose-invert ${className}`}
       style={{
         // Ensure code blocks are properly styled
-        '--code-bg': '#1f2937',
-        '--code-text': '#f9fafb'
+        '--tw-prose-pre-bg': '#1f2937',
+        '--tw-prose-pre-code': '#f9fafb',
+        '--tw-prose-invert-pre-bg': '#1f2937',
+        '--tw-prose-invert-pre-code': '#f9fafb'
       } as React.CSSProperties}
       dangerouslySetInnerHTML={mounted ? { __html: content } : undefined}
     />

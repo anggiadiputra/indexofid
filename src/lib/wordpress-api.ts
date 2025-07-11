@@ -418,7 +418,7 @@ export async function getPostById(id: number): Promise<WordPressPost | null> {
   }
 }
 
-// Get all categories
+// Get all categories with enhanced metadata
 export async function getAllCategories(): Promise<WordPressCategory[]> {
   // Check cache first
   const cached = cacheManager.getCachedCategories();
@@ -427,21 +427,39 @@ export async function getAllCategories(): Promise<WordPressCategory[]> {
   }
 
   try {
-    const url = `${API_BASE}/categories?per_page=100&orderby=count&order=desc`;
+    // Enhanced API call with more fields and metadata
+    const params = new URLSearchParams({
+      per_page: '100',
+      orderby: 'count',
+      order: 'desc',
+      _fields: 'id,name,slug,description,count,parent,meta,link',
+      hide_empty: 'false' // Include categories without posts
+    });
+    
+    const url = `${API_BASE}/categories?${params.toString()}`;
     const categories = await fetchWithCache<WordPressCategory[]>(
       url, 
-      'categories_all', 
+      'categories_all_enhanced', 
       CACHE_TTL.CATEGORIES,
       true
     );
 
-    // Cache the categories
-    cacheManager.cacheCategories(categories, CACHE_TTL.CATEGORIES);
+    // Process categories to include hierarchy information
+    const processedCategories = categories.map(category => ({
+      ...category,
+      // Add computed fields
+      hasChildren: categories.some(cat => cat.parent === category.id),
+      level: getCategoryLevel(category, categories),
+      fullPath: getCategoryPath(category, categories)
+    }));
 
-    return categories;
+    // Cache the enhanced categories
+    cacheManager.cacheCategories(processedCategories, CACHE_TTL.CATEGORIES);
+
+    return processedCategories;
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    // Return some basic fallback categories if available from cache
+    console.error('Error fetching enhanced categories:', error);
+    // Return basic fallback categories if available from cache
     const fallbackCategories = cacheManager.getCachedCategories();
     if (fallbackCategories && fallbackCategories.length > 0) {
       console.log('[WordPress API] Using cached fallback categories');
@@ -449,6 +467,22 @@ export async function getAllCategories(): Promise<WordPressCategory[]> {
     }
     return [];
   }
+}
+
+// Helper function to calculate category hierarchy level
+function getCategoryLevel(category: WordPressCategory, allCategories: WordPressCategory[]): number {
+  if (!category.parent) return 0;
+  const parent = allCategories.find(cat => cat.id === category.parent);
+  if (!parent) return 1;
+  return 1 + getCategoryLevel(parent, allCategories);
+}
+
+// Helper function to get full category path
+function getCategoryPath(category: WordPressCategory, allCategories: WordPressCategory[]): string {
+  if (!category.parent) return category.name;
+  const parent = allCategories.find(cat => cat.id === category.parent);
+  if (!parent) return category.name;
+  return `${getCategoryPath(parent, allCategories)} > ${category.name}`;
 }
 
 // Get category by slug
@@ -471,7 +505,7 @@ export async function getCategoryBySlug(slug: string): Promise<WordPressCategory
   }
 }
 
-// Get all tags
+// Get all tags with enhanced metadata
 export async function getAllTags(): Promise<WordPressTag[]> {
   // Check cache first
   const cached = cacheManager.getCachedTags();
@@ -480,21 +514,39 @@ export async function getAllTags(): Promise<WordPressTag[]> {
   }
 
   try {
-    const url = `${API_BASE}/tags?per_page=100&orderby=count&order=desc`;
+    // Enhanced API call with more fields and metadata
+    const params = new URLSearchParams({
+      per_page: '100',
+      orderby: 'count',
+      order: 'desc',
+      _fields: 'id,name,slug,description,count,meta,link',
+      hide_empty: 'false' // Include tags without posts
+    });
+    
+    const url = `${API_BASE}/tags?${params.toString()}`;
     const tags = await fetchWithCache<WordPressTag[]>(
       url, 
-      'tags_all', 
+      'tags_all_enhanced', 
       CACHE_TTL.TAGS,
       true
     );
 
-    // Cache the tags
-    cacheManager.cacheTags(tags, CACHE_TTL.TAGS);
+    // Process tags to include additional computed fields
+    const processedTags = tags.map(tag => ({
+      ...tag,
+      // Add computed fields
+      popularity: getTagPopularity(tag.count, tags),
+      category: getTagCategory(tag.name), // Auto-categorize tags
+      relatedTerms: findRelatedTags(tag, tags)
+    }));
 
-    return tags;
+    // Cache the enhanced tags
+    cacheManager.cacheTags(processedTags, CACHE_TTL.TAGS);
+
+    return processedTags;
   } catch (error) {
-    console.error('Error fetching tags:', error);
-    // Return some basic fallback tags if available from cache
+    console.error('Error fetching enhanced tags:', error);
+    // Return basic fallback tags if available from cache
     const fallbackTags = cacheManager.getCachedTags();
     if (fallbackTags && fallbackTags.length > 0) {
       console.log('[WordPress API] Using cached fallback tags');
@@ -502,6 +554,62 @@ export async function getAllTags(): Promise<WordPressTag[]> {
     }
     return [];
   }
+}
+
+// Helper function to determine tag popularity level
+function getTagPopularity(count: number, allTags: WordPressTag[]): 'high' | 'medium' | 'low' {
+  const maxCount = Math.max(...allTags.map(tag => tag.count));
+  const percentage = (count / maxCount) * 100;
+  
+  if (percentage >= 70) return 'high';
+  if (percentage >= 30) return 'medium';
+  return 'low';
+}
+
+// Helper function to auto-categorize tags based on common patterns
+function getTagCategory(tagName: string): string {
+  const name = tagName.toLowerCase();
+  
+  // Technology categories
+  if (name.includes('javascript') || name.includes('react') || name.includes('node') || name.includes('api')) {
+    return 'technology';
+  }
+  if (name.includes('css') || name.includes('html') || name.includes('design') || name.includes('ui')) {
+    return 'frontend';
+  }
+  if (name.includes('server') || name.includes('database') || name.includes('backend') || name.includes('mysql')) {
+    return 'backend';
+  }
+  if (name.includes('tutorial') || name.includes('guide') || name.includes('how-to')) {
+    return 'tutorial';
+  }
+  if (name.includes('wordpress') || name.includes('cms') || name.includes('plugin')) {
+    return 'wordpress';
+  }
+  
+  return 'general';
+}
+
+// Helper function to find related tags
+function findRelatedTags(currentTag: WordPressTag, allTags: WordPressTag[]): string[] {
+  const related: string[] = [];
+  const currentName = currentTag.name.toLowerCase();
+  
+  // Find tags with similar names or common keywords
+  allTags.forEach(tag => {
+    if (tag.id === currentTag.id) return;
+    
+    const tagName = tag.name.toLowerCase();
+    const commonWords = currentName.split(/\s+/).filter(word => 
+      word.length > 3 && tagName.includes(word)
+    );
+    
+    if (commonWords.length > 0 && related.length < 5) {
+      related.push(tag.slug);
+    }
+  });
+  
+  return related;
 }
 
 // Get tag by slug
@@ -1018,5 +1126,96 @@ export async function getPostCount(): Promise<number> {
       }
     }
     return 0;
+  }
+} 
+
+// Get enhanced taxonomy data from RankMath (if enabled)
+export async function getEnhancedTaxonomyData(): Promise<{
+  categories: WordPressCategory[];
+  tags: WordPressTag[];
+  rankMathMeta?: any;
+}> {
+  try {
+    // Fetch categories and tags in parallel
+    const [categories, tags] = await Promise.all([
+      getAllCategories(),
+      getAllTags()
+    ]);
+
+    // If RankMath is enabled, try to get additional taxonomy metadata
+    if (env.rankmath?.enabled) {
+      try {
+        const { getRankMathSEO } = await import('./rankmath-api');
+        
+        // Get taxonomy page metadata from RankMath
+        const categoryPageUrl = `${env.wordpress.backendUrl}/category/`;
+        const tagPageUrl = `${env.wordpress.backendUrl}/tag/`;
+        
+        const [categoryMeta, tagMeta] = await Promise.all([
+          getRankMathSEO(categoryPageUrl).catch(() => null),
+          getRankMathSEO(tagPageUrl).catch(() => null)
+        ]);
+
+        return {
+          categories,
+          tags,
+          rankMathMeta: {
+            categoryPage: categoryMeta,
+            tagPage: tagMeta,
+            lastUpdated: new Date().toISOString()
+          }
+        };
+      } catch (error) {
+        console.warn('[Enhanced Taxonomy] RankMath integration failed:', error);
+      }
+    }
+
+    return { categories, tags };
+  } catch (error) {
+    console.error('[Enhanced Taxonomy] Failed to fetch taxonomy data:', error);
+    return {
+      categories: [],
+      tags: []
+    };
+  }
+}
+
+// Get category/tag settings from WordPress customizer or theme options
+export async function getTaxonomySettings(): Promise<{
+  categorySettings: any;
+  tagSettings: any;
+}> {
+  try {
+    // This would require a custom WordPress endpoint or plugin
+    // For now, we'll return default settings
+    const defaultSettings = {
+      categorySettings: {
+        showInNavigation: true,
+        showPostCount: true,
+        hierarchical: true,
+        description: 'Organize content by categories',
+        maxDisplayed: 20
+      },
+      tagSettings: {
+        showInNavigation: false,
+        showPostCount: true,
+        hierarchical: false,
+        description: 'Tag content with keywords',
+        maxDisplayed: 50,
+        minPostCount: 1 // Only show tags with at least 1 post
+      }
+    };
+
+    // You could extend this to fetch from WordPress Customizer API
+    // const settingsUrl = `${API_BASE}/customizer-settings/taxonomy`;
+    // const settings = await fetchWithCache(settingsUrl, 'taxonomy_settings', CACHE_TTL.CATEGORIES);
+    
+    return defaultSettings;
+  } catch (error) {
+    console.error('[Taxonomy Settings] Failed to fetch settings:', error);
+    return {
+      categorySettings: {},
+      tagSettings: {}
+    };
   }
 } 

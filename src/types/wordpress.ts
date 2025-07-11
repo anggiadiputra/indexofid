@@ -115,7 +115,7 @@ export interface WordPressPost {
   };
 }
 
-// WordPress Category Types
+// WordPress Category Types - Enhanced
 export interface WordPressCategory {
   id: number;
   count: number;
@@ -126,6 +126,10 @@ export interface WordPressCategory {
   taxonomy: 'category';
   parent: number;
   meta: Record<string, any>;
+  // Enhanced fields
+  hasChildren?: boolean;
+  level?: number;
+  fullPath?: string;
   _links: {
     self: Array<{ href: string }>;
     collection: Array<{ href: string }>;
@@ -135,7 +139,7 @@ export interface WordPressCategory {
   };
 }
 
-// WordPress Tag Types
+// WordPress Tag Types - Enhanced
 export interface WordPressTag {
   id: number;
   count: number;
@@ -145,6 +149,10 @@ export interface WordPressTag {
   slug: string;
   taxonomy: 'post_tag';
   meta: Record<string, any>;
+  // Enhanced fields
+  popularity?: 'high' | 'medium' | 'low';
+  category?: string;
+  relatedTerms?: string[];
   _links: {
     self: Array<{ href: string }>;
     collection: Array<{ href: string }>;

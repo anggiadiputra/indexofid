@@ -7,97 +7,95 @@ import CodeBlock from '@/components/CodeBlock';
 interface UseCodeBlockEnhancerProps {
   content: string;
   enabled?: boolean;
-  showLineNumbers?: boolean;
 }
 
 export default function useCodeBlockEnhancer({ 
   content, 
-  enabled = true,
-  showLineNumbers = false 
+  enabled = true
 }: UseCodeBlockEnhancerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const rootsRef = useRef<any[]>([]);
 
+  // Handle hydration
   useEffect(() => {
-    setIsClient(true);
+    setIsHydrated(true);
+    return () => {
+      rootsRef.current.forEach(root => {
+        try {
+          root.unmount();
+        } catch (error) {
+          console.error('Error unmounting:', error);
+        }
+      });
+      rootsRef.current = [];
+    };
   }, []);
 
+  // Process code blocks
   useEffect(() => {
-    if (!isClient || !enabled || !containerRef.current || !content) return;
+    if (!isHydrated || !enabled || !containerRef.current || !content) return;
 
     const container = containerRef.current;
     container.innerHTML = content;
 
+    // Find and enhance code blocks
     const codeBlocks = container.querySelectorAll('pre code, .wp-block-code code');
-    const roots: any[] = [];
-
+    
     codeBlocks.forEach((codeElement) => {
       try {
         const codeContent = codeElement.textContent || '';
         const parent = codeElement.parentElement;
         if (!parent) return;
 
-        // Skip inline code
-        if (codeContent.trim().length < 10 && !codeContent.includes('\n')) return;
-
+        // Create wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'my-4';
         parent.parentNode?.insertBefore(wrapper, parent);
         parent.remove();
 
+        // Create and store root
         const root = createRoot(wrapper);
-        root.render(
-          <CodeBlock>
-            {codeContent}
-          </CodeBlock>
-        );
-        roots.push(root);
+        root.render(<CodeBlock>{codeContent}</CodeBlock>);
+        rootsRef.current.push(root);
       } catch (error) {
-        console.error('Error enhancing code block:', error);
+        console.error('Error processing code block:', error);
       }
     });
+  }, [content, enabled, isHydrated]);
 
-    return () => {
-      roots.forEach(root => {
-        try {
-          root.unmount();
-        } catch (error) {
-          console.error('Error unmounting root:', error);
-        }
-      });
-    };
-  }, [content, enabled, isClient]);
-
-  return { containerRef };
+  return containerRef;
 }
 
 export function EnhancedContent({ 
   content, 
-  className = '',
-  showLineNumbers = false,
-  enableCodeBlocks = true 
+  className = '' 
 }: {
   content: string;
   className?: string;
-  showLineNumbers?: boolean;
-  enableCodeBlocks?: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
-  const { containerRef } = useCodeBlockEnhancer({ 
-    content, 
-    enabled: enableCodeBlocks && mounted,
-    showLineNumbers 
+  const containerRef = useCodeBlockEnhancer({ 
+    content,
+    enabled: mounted
   });
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
+
+  if (!mounted) {
+    return <div className="animate-pulse">Loading...</div>;
+  }
 
   return (
     <div 
       ref={containerRef}
       className={`prose prose-lg max-w-none dark:prose-invert ${className}`}
-      dangerouslySetInnerHTML={mounted ? { __html: content } : undefined}
+      dangerouslySetInnerHTML={{ __html: content }}
     />
   );
 } 

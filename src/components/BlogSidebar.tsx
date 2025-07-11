@@ -85,24 +85,54 @@ export default function BlogSidebar({
           Kategori
         </h3>
         <div className="space-y-2">
-          {categories.slice(0, 10).map(category => (
-            <Link
-              key={category.id}
-              href={`/blog?category=${category.slug}`}
-              className={`block px-3 py-2 rounded-md text-sm transition-all duration-200 transform hover:translate-x-1 ${
-                isCategoryActive(category)
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 shadow-sm'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-sm'
-              }`}
-            >
-              {category.name}
-              {category.count && (
-                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full">
-                  {category.count}
-                </span>
-              )}
-            </Link>
-          ))}
+          {categories.slice(0, 10).map(category => {
+            const getCategoryIcon = (level: number, hasChildren: boolean) => {
+              if (level === 0) return hasChildren ? '📁' : '📂';
+              if (level === 1) return hasChildren ? '📂' : '📄';
+              return '📄';
+            };
+
+            const getIndentation = (level: number) => {
+              return level * 8; // 8px per level
+            };
+
+            return (
+              <Link
+                key={category.id}
+                href={`/blog?category=${category.slug}`}
+                className={`block px-3 py-2 rounded-md text-sm transition-all duration-200 transform hover:translate-x-1 ${
+                  isCategoryActive(category)
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 shadow-sm'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-sm'
+                }`}
+                style={{ paddingLeft: `${12 + getIndentation(category.level || 0)}px` }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className="mr-2 text-xs">
+                      {getCategoryIcon(category.level || 0, category.hasChildren || false)}
+                    </span>
+                    <span>{category.name}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    {category.hasChildren && (
+                      <span className="text-xs text-gray-400">+</span>
+                    )}
+                    {category.count && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full">
+                        {category.count}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {category.fullPath && category.level && category.level > 0 && (
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 opacity-75">
+                    {category.fullPath}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -114,20 +144,76 @@ export default function BlogSidebar({
           </svg>
           Tag Populer
         </h3>
+        
+        {/* Tag categories filter */}
+        <div className="mb-3">
+          <div className="flex flex-wrap gap-1 text-xs">
+            {['technology', 'frontend', 'backend', 'tutorial', 'wordpress'].map(category => {
+              const categoryTags = tags.filter(tag => tag.category === category);
+              if (categoryTags.length === 0) return null;
+              
+              return (
+                <span
+                  key={category}
+                  className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full capitalize border border-blue-200 dark:border-blue-700"
+                >
+                  {category} ({categoryTags.length})
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2">
-          {tags.slice(0, 20).map(tag => (
-            <Link
-              key={tag.id}
-              href={`/blog?tag=${tag.slug}`}
-              className={`inline-block px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 transform hover:scale-105 ${
-                isTagActive(tag)
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 shadow-md'
-                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-sm'
-              }`}
-            >
-              {tag.name}
-            </Link>
-          ))}
+          {tags.slice(0, 20).map(tag => {
+            const getPopularityStyle = (popularity: 'high' | 'medium' | 'low') => {
+              const styles = {
+                high: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700',
+                medium: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700',
+                low: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700'
+              };
+              return styles[popularity] || 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+            };
+
+            return (
+              <Link
+                key={tag.id}
+                href={`/blog?tag=${tag.slug}`}
+                className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 transform hover:scale-105 border ${
+                  isTagActive(tag)
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 shadow-md border-blue-300'
+                    : tag.popularity ? getPopularityStyle(tag.popularity) : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-sm border-gray-200 dark:border-gray-600'
+                }`}
+              >
+                <span>{tag.name}</span>
+                {tag.popularity === 'high' && <span>🔥</span>}
+                {tag.count && tag.count > 0 && (
+                  <span className="opacity-75">({tag.count})</span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Show tag category legend */}
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-3">
+              <span className="flex items-center">
+                <span className="w-2 h-2 bg-red-100 border border-red-200 rounded-full mr-1"></span>
+                High
+              </span>
+              <span className="flex items-center">
+                <span className="w-2 h-2 bg-yellow-100 border border-yellow-200 rounded-full mr-1"></span>
+                Medium
+              </span>
+              <span className="flex items-center">
+                <span className="w-2 h-2 bg-green-100 border border-green-200 rounded-full mr-1"></span>
+                Low
+              </span>
+            </div>
+            <span>🔥 Popular</span>
+          </div>
         </div>
       </div>
     </div>

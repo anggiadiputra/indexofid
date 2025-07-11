@@ -12,7 +12,7 @@ import {
   generateOrganizationSchema, 
   generateWebPageSchema 
 } from '@/lib/schema-generator';
-import SEOHead, { getServerSideRankMathSEO } from '@/components/SEOHead';
+import SEOHead from '@/components/SEOHead';
 import { env } from '@/config/environment';
 import { resolveRankMathUrl, resolveFrontendUrl, findPostBySlugVariations } from '@/lib/url-resolver';
 import dynamic from 'next/dynamic';

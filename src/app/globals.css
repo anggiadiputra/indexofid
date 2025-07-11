@@ -1284,3 +1284,58 @@ body,
     display: none;
   }
 } 
+
+/* Enhanced Code Blocks Styling */
+.code-block-enhanced {
+  @apply my-6;
+}
+
+.code-block-enhanced pre {
+  @apply m-0;
+}
+
+.code-block-enhanced code {
+  @apply block;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+/* WordPress content styling */
+.prose .wp-block-code {
+  @apply rounded-lg overflow-hidden;
+}
+
+.prose .wp-block-code code {
+  @apply bg-transparent;
+}
+
+/* Inline code styling */
+.prose code:not(.code-block-enhanced code) {
+  @apply bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1 py-0.5 rounded text-sm;
+}
+
+/* Copy button animations */
+@keyframes copySuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.copy-success {
+  animation: copySuccess 0.3s ease-in-out;
+}
+
+/* Code block header gradients */
+.code-header-gradient {
+  background: linear-gradient(135deg, rgba(55, 65, 81, 1) 0%, rgba(75, 85, 99, 1) 100%);
+}
+
+/* Language icons and badges */
+.language-badge {
+  @apply inline-flex items-center space-x-1 text-xs font-medium bg-gray-700 text-gray-300 px-2 py-1 rounded;
+}
+
+/* Line numbers styling */
+.line-numbers {
+  @apply select-none text-gray-500 text-right pr-4 min-w-[2rem];
+  line-height: inherit;
+} 

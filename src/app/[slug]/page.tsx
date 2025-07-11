@@ -49,6 +49,10 @@ const BlogSidebar = dynamic(() => import('@/components/BlogSidebar'), {
   ssr: true
 });
 
+const ClientEnhancedContent = dynamic(() => import('@/components/ClientEnhancedContent'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
+
 // SEOHead will be imported and used normally since it's a client component
 
 interface BlogPostPageProps {
@@ -354,9 +358,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     className="prose prose-lg prose-gray max-w-none"
                   />
                 ) : (
-                  <div className="prose prose-lg prose-gray max-w-none">
-                    <div dangerouslySetInnerHTML={{ __html: post.content?.rendered || '' }} />
-                  </div>
+                  <ClientEnhancedContent 
+                    content={post.content?.rendered || ''}
+                    className="prose prose-lg prose-gray max-w-none"
+                    showLineNumbers={true}
+                    enableCodeBlocks={true}
+                  />
                 )}
               </article>
 

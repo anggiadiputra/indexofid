@@ -85,6 +85,10 @@ const nextConfig = {
           source: '/category-sitemap.xml',
           destination: '/category-sitemap.xml',
         },
+        {
+          source: '/tag-sitemap.xml',
+          destination: '/tag-sitemap.xml',
+        },
       ],
     };
   },
@@ -122,6 +126,36 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400'
+          }
+        ]
+      },
+      {
+        source: '/(sitemap.xml|post-sitemap.xml|page-sitemap.xml|category-sitemap.xml|tag-sitemap.xml)',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/xml; charset=utf-8'
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=1800, s-maxage=1800'
+          },
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex'
+          }
+        ]
+      },
+      {
+        source: '/sitemap.xsl',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/xsl; charset=utf-8'
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, s-maxage=86400'
           }
         ]
       },

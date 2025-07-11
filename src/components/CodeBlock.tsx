@@ -20,7 +20,10 @@ export default function CodeBlock({
   const codeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    setMounted(true);
+    // Ensure we're on the client side
+    if (typeof window !== 'undefined') {
+      setMounted(true);
+    }
   }, []);
 
   const copyToClipboard = async () => {
@@ -109,9 +112,14 @@ export default function CodeBlock({
     return icons[lang.toLowerCase()] || '📝';
   };
 
+  // Return a simpler loading state if not mounted
   if (!mounted) {
     return (
       <div className={`relative bg-gray-900 text-gray-100 rounded-lg overflow-hidden ${className}`}>
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div>
+          <div className="h-6 w-16 bg-gray-700 rounded animate-pulse"></div>
+        </div>
         <pre className="p-4 overflow-x-auto">
           <code>{children}</code>
         </pre>

@@ -10,6 +10,35 @@ import { env } from '@/config/environment';
 import { cacheManager, AdvancedCacheManager, BrowserStorageCache, browserCache } from './cache-manager';
 import { serverCache } from './server-cache';
 
+// Helper functions for conditional logging (only in development)
+const debugLog = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, ...args);
+  }
+};
+
+const debugWarn = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(message, ...args);
+  }
+};
+
+const debugError = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.error(message, ...args);
+  }
+};
+
+// Production error logging (for critical errors only)
+const prodError = (message: string, error?: any) => {
+  if (process.env.NODE_ENV === 'production') {
+    // Only log critical errors in production
+    console.error(message, error);
+  } else {
+    console.error(message, error);
+  }
+};
+
 // Use client-side or server-side API URL based on environment
 const API_BASE = typeof window !== 'undefined'
   ? env.wordpress.publicApiUrl // Client-side from NEXT_PUBLIC_WORDPRESS_API_URL
@@ -130,27 +159,21 @@ async function fetchWithCache<T>(
         // We can treat this as an empty result instead of an error.
         const isListEndpoint = url.includes('per_page=') || url.includes('slug=');
         if (response.status === 400 && isListEndpoint) {
-          if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.log(`[WordPress API Info] Received 400 for ${url}, treating as empty array.`);
-          }
+                  debugLog(`[WordPress API Info] Received 400 for ${url}, treating as empty array.`);
           return [] as unknown as T;
         }
 
         // Handle rate limiting (429) and server errors (5xx) with retries
         if ((response.status === 429 || response.status >= 500) && attempt < retries) {
           const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-          console.log(`[WordPress API] Retrying after ${delay}ms (attempt ${attempt + 1}/${retries + 1})`);
+          debugLog(`[WordPress API] Retrying after ${delay}ms (attempt ${attempt + 1}/${retries + 1})`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
 
         // For all other errors, or exhausted retries, throw.
         const bodyText = await response.text().catch(() => '');
-        if (process.env.NODE_ENV !== 'production') {
-          // eslint-disable-next-line no-console
-          console.error('[WordPress API Error]', response.status, response.statusText, {url, body: bodyText});
-        }
+        debugError('[WordPress API Error]', response.status, response.statusText, {url, body: bodyText});
         throw new WordPressApiError(
           `WordPress API error: ${response.status} ${response.statusText}. URL: ${url}. Body: ${bodyText}`,
           response.status
@@ -166,7 +189,7 @@ async function fetchWithCache<T>(
         if (bodyText.includes('<!DOCTYPE') || bodyText.includes('<html')) {
           if (attempt < retries) {
             const delay = Math.pow(2, attempt) * 1000;
-            console.log(`[WordPress API] Received HTML instead of JSON, retrying after ${delay}ms (attempt ${attempt + 1}/${retries + 1})`);
+            debugLog(`[WordPress API] Received HTML instead of JSON, retrying after ${delay}ms (attempt ${attempt + 1}/${retries + 1})`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
@@ -174,12 +197,12 @@ async function fetchWithCache<T>(
           // For list endpoints, return empty array instead of failing
           const isListEndpoint = url.includes('per_page=') || url.includes('posts') || url.includes('tags') || url.includes('categories');
           if (isListEndpoint) {
-            console.warn(`[WordPress API] Server returned HTML instead of JSON for ${url}, returning empty array`);
+            debugWarn(`[WordPress API] Server returned HTML instead of JSON for ${url}, returning empty array`);
             return [] as unknown as T;
           }
         }
         
-        console.error(`[WordPress API] Invalid content-type: ${contentType}. Body: ${bodyText.substring(0, 200)}...`);
+        debugError(`[WordPress API] Invalid content-type: ${contentType}. Body: ${bodyText.substring(0, 200)}...`);
         throw new WordPressApiError(
           `WordPress API returned invalid content-type: ${contentType}. Expected application/json. URL: ${url}`,
           response.status
@@ -320,7 +343,7 @@ export async function getAllPosts(
     // Try fallback API if primary fails
     if (API_BASE !== FALLBACK_API_BASE) {
       try {
-        console.log('[WordPress API] Trying fallback API endpoint');
+                  debugLog('[WordPress API] Trying fallback API endpoint');
         const fallbackUrl = url.replace(API_BASE, FALLBACK_API_BASE);
         const fallbackCacheKey = cacheKey + '_fallback';
         
@@ -352,7 +375,7 @@ export async function getAllPosts(
     // Try to return cached posts if available
     const cached = cache.get<WordPressPost[]>(cacheKey);
     if (cached) {
-      console.log('[WordPress API] Using cached fallback posts');
+      debugLog('[WordPress API] Using cached fallback posts');
       return cached;
     }
     

@@ -53,6 +53,25 @@ const config: RankMathConfig = {
   cacheTime: 60 * 60 * 1000, // 1 hour cache
 };
 
+// Helper function for conditional logging (only in development)
+const debugLog = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, ...args);
+  }
+};
+
+const debugWarn = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(message, ...args);
+  }
+};
+
+const debugError = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.error(message, ...args);
+  }
+};
+
 /**
  * RankMath API Service for headless CMS support
  */
@@ -75,8 +94,8 @@ class RankMathAPIService {
    */
   async getSEOHead(url: string): Promise<RankMathSEOData | null> {
     if (!this.isEnabled()) {
-      console.warn('[RankMath] API is disabled or not configured');
-      console.warn('[RankMath] Config:', {
+      debugWarn('[RankMath] API is disabled or not configured');
+      debugWarn('[RankMath] Config:', {
         enabled: this.config.enabled,
         apiUrl: this.config.apiUrl ? 'Set' : 'Not set',
         environment: {
@@ -88,7 +107,7 @@ class RankMathAPIService {
     }
 
     if (!url) {
-      console.warn('[RankMath] URL is required');
+      debugWarn('[RankMath] URL is required');
       return null;
     }
 
@@ -103,8 +122,8 @@ class RankMathAPIService {
         return cached;
       }
 
-      console.log(`[RankMath] Fetching SEO data for ${fullUrl}`);
-      console.log(`[RankMath] API URL: ${this.config.apiUrl}`);
+      debugLog(`[RankMath] Fetching SEO data for ${fullUrl}`);
+      debugLog(`[RankMath] API URL: ${this.config.apiUrl}`);
       
       // Determine if we're running on client or server
       const isClient = typeof window !== 'undefined';
@@ -114,11 +133,11 @@ class RankMathAPIService {
       if (isClient) {
         // Use internal API proxy route to avoid CORS issues
         apiUrl = `/api/rankmath?url=${encodeURIComponent(fullUrl)}`;
-        console.log(`[RankMath] Using client-side proxy: ${apiUrl}`);
+        debugLog(`[RankMath] Using client-side proxy: ${apiUrl}`);
       } else {
         // Direct API call on server-side
         apiUrl = `${this.config.apiUrl}?url=${encodeURIComponent(fullUrl)}`;
-        console.log(`[RankMath] Using server-side direct call: ${apiUrl}`);
+        debugLog(`[RankMath] Using server-side direct call: ${apiUrl}`);
       }
       
       // Create AbortController for timeout
@@ -136,20 +155,20 @@ class RankMathAPIService {
 
       clearTimeout(timeoutId);
 
-      console.log(`[RankMath] Response status: ${response.status}`);
+      debugLog(`[RankMath] Response status: ${response.status}`);
 
       if (!response.ok) {
         const errorText = await response.text();
         
         // Handle different HTTP status codes more gracefully
         if (response.status === 404) {
-          console.log(`[RankMath] Page not found (404) for ${fullUrl}. Using fallback SEO generation.`);
+          debugLog(`[RankMath] Page not found (404) for ${fullUrl}. Using fallback SEO generation.`);
         } else if (response.status === 403) {
-          console.warn(`[RankMath] Access forbidden (403) for ${fullUrl}. Check API permissions.`);
+          debugWarn(`[RankMath] Access forbidden (403) for ${fullUrl}. Check API permissions.`);
         } else if (response.status >= 500) {
-          console.error(`[RankMath] Server error (${response.status}) for ${fullUrl}. Server may be temporarily unavailable.`);
+          debugError(`[RankMath] Server error (${response.status}) for ${fullUrl}. Server may be temporarily unavailable.`);
         } else {
-          console.warn(`[RankMath] HTTP error ${response.status} for ${fullUrl}: ${errorText}`);
+          debugWarn(`[RankMath] HTTP error ${response.status} for ${fullUrl}: ${errorText}`);
         }
         
         // Return null instead of throwing error for non-critical failures
@@ -157,7 +176,7 @@ class RankMathAPIService {
       }
 
       const data = await response.json() as RankMathSEOData;
-      console.log(`[RankMath] Response data:`, {
+      debugLog(`[RankMath] Response data:`, {
         success: data.success,
         headLength: data.head ? data.head.length : 0,
         headPreview: data.head ? data.head.substring(0, 200) + '...' : 'No head data'
@@ -166,11 +185,11 @@ class RankMathAPIService {
       if (data.success && data.head) {
         // Cache successful response
         serverCache.set(cacheKey, data, this.config.cacheTime);
-        console.log(`[RankMath] Successfully fetched SEO data for ${fullUrl}`);
+        debugLog(`[RankMath] Successfully fetched SEO data for ${fullUrl}`);
         
         // Extract and log key SEO data
         const extracted = this.extractSEOData(data.head);
-        console.log(`[RankMath] Extracted SEO data:`, {
+        debugLog(`[RankMath] Extracted SEO data:`, {
           title: extracted.title ? extracted.title.substring(0, 50) + '...' : 'Not found',
           description: extracted.description ? extracted.description.substring(0, 50) + '...' : 'Not found',
           focusKeyword: extracted.focusKeyword || 'Not found',
@@ -181,16 +200,16 @@ class RankMathAPIService {
         
         return data;
       } else {
-        console.warn(`[RankMath] API returned success:false for ${fullUrl}`);
+        debugWarn(`[RankMath] API returned success:false for ${fullUrl}`);
         return null;
       }
 
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          console.warn(`[RankMath] Request timeout for ${fullUrl}. Using fallback SEO generation.`);
+          debugWarn(`[RankMath] Request timeout for ${fullUrl}. Using fallback SEO generation.`);
         } else {
-          console.log(`[RankMath] API unavailable for ${fullUrl}. Using fallback SEO generation.`);
+          debugLog(`[RankMath] API unavailable for ${fullUrl}. Using fallback SEO generation.`);
         }
       }
       return null;
@@ -578,7 +597,7 @@ class RankMathAPIService {
         const jsonData = JSON.parse(match[1].trim());
         structuredData.push(jsonData);
       } catch (error) {
-        console.warn('[RankMath] Failed to parse JSON-LD:', error);
+        debugWarn('[RankMath] Failed to parse JSON-LD:', error);
       }
     }
 
@@ -622,19 +641,19 @@ class RankMathAPIService {
    */
   async testConnection(): Promise<boolean> {
     if (!this.isEnabled()) {
-      console.log('[RankMath] Connection test failed: API not enabled');
+      debugLog('[RankMath] Connection test failed: API not enabled');
       return false;
     }
 
     try {
       const testUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_FRONTEND_DOMAIN || process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL || 'http://localhost:3000';
-      console.log(`[RankMath] Testing connection with URL: ${testUrl}`);
+      debugLog(`[RankMath] Testing connection with URL: ${testUrl}`);
       const result = await this.getSEOHead(testUrl);
       const isConnected = result !== null;
-      console.log(`[RankMath] Connection test result: ${isConnected ? 'SUCCESS' : 'FAILED'}`);
+      debugLog(`[RankMath] Connection test result: ${isConnected ? 'SUCCESS' : 'FAILED'}`);
       return isConnected;
     } catch (error) {
-      console.error('[RankMath] Connection test failed:', error);
+      debugError('[RankMath] Connection test failed:', error);
       return false;
     }
   }

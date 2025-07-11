@@ -16,117 +16,59 @@ export default function useCodeBlockEnhancer({
   showLineNumbers = false 
 }: UseCodeBlockEnhancerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Ensure we're on the client side
-    if (typeof window === 'undefined') return;
-    
-    if (!enabled || !containerRef.current || !content) return;
+    setIsClient(true);
+  }, []);
 
-    // Add a small delay to ensure proper hydration
-    const timer = setTimeout(() => {
-      const container = containerRef.current;
-      if (!container) return;
-      
-      // Set the initial content
-      container.innerHTML = content;
+  useEffect(() => {
+    if (!isClient || !enabled || !containerRef.current || !content) return;
 
-      // Find all code blocks (pre > code, code, .wp-block-code)
-      const codeBlocks = container.querySelectorAll(
-        'pre code, .wp-block-code code, .wp-block-preformatted, pre.wp-block-code, code.language-*'
-      );
+    const container = containerRef.current;
+    container.innerHTML = content;
 
-      const roots: any[] = [];
+    const codeBlocks = container.querySelectorAll('pre code, .wp-block-code code');
+    const roots: any[] = [];
 
-      codeBlocks.forEach((codeElement, index) => {
+    codeBlocks.forEach((codeElement) => {
+      try {
+        const codeContent = codeElement.textContent || '';
+        const parent = codeElement.parentElement;
+        if (!parent) return;
+
+        // Skip inline code
+        if (codeContent.trim().length < 10 && !codeContent.includes('\n')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'my-4';
+        parent.parentNode?.insertBefore(wrapper, parent);
+        parent.remove();
+
+        const root = createRoot(wrapper);
+        root.render(
+          <CodeBlock>
+            {codeContent}
+          </CodeBlock>
+        );
+        roots.push(root);
+      } catch (error) {
+        console.error('Error enhancing code block:', error);
+      }
+    });
+
+    return () => {
+      roots.forEach(root => {
         try {
-          // Get the code content
-          let codeContent = '';
-          let language = '';
-          let parentElement = codeElement.parentElement;
-
-                   // Extract content based on element type
-           if (codeElement.tagName === 'CODE') {
-             codeContent = codeElement.textContent || '';
-             
-             // Try to get language from class
-             const classList = Array.from(codeElement.classList);
-             const langClass = classList.find(cls => cls.startsWith('language-'));
-             if (langClass) {
-               language = langClass.replace('language-', '');
-             }
-             
-             // If code is inside a pre tag, use the pre as parent
-             if (parentElement?.tagName === 'PRE') {
-               parentElement = parentElement as HTMLElement;
-             } else {
-               parentElement = codeElement as HTMLElement;
-             }
-           } else if (codeElement.tagName === 'PRE') {
-             codeContent = codeElement.textContent || '';
-             parentElement = codeElement as HTMLElement;
-           } else {
-             codeContent = codeElement.textContent || '';
-             parentElement = codeElement as HTMLElement;
-           }
-
-          // Skip if content is too short (likely inline code)
-          if (codeContent.trim().length < 10 || !codeContent.includes('\n')) {
-            return;
-          }
-
-          // Create a wrapper div
-          const wrapperDiv = document.createElement('div');
-          wrapperDiv.className = 'code-block-enhanced';
-          wrapperDiv.style.margin = '1.5rem 0';
-
-          // Replace the original element with our wrapper
-          if (parentElement && parentElement.parentNode) {
-            parentElement.parentNode.insertBefore(wrapperDiv, parentElement);
-            parentElement.remove();
-
-            // Create React root and render CodeBlock
-            const root = createRoot(wrapperDiv);
-            root.render(
-              <CodeBlock 
-                language={language}
-                showLineNumbers={showLineNumbers}
-              >
-                {codeContent}
-              </CodeBlock>
-            );
-            
-            roots.push(root);
-          }
+          root.unmount();
         } catch (error) {
-          console.error('Error enhancing code block:', error);
+          console.error('Error unmounting root:', error);
         }
       });
-
-      // Cleanup function
-      return () => {
-        roots.forEach(root => {
-          try {
-            root.unmount();
-          } catch (error) {
-            console.error('Error unmounting code block:', error);
-          }
-        });
-      };
-    }, 100); // Small delay for hydration
-
-    return () => clearTimeout(timer);
-  }, [content, enabled, showLineNumbers]);
+    };
+  }, [content, enabled, isClient]);
 
   return { containerRef };
-}
-
-// Alternative: Component-based approach
-interface EnhancedContentProps {
-  content: string;
-  className?: string;
-  showLineNumbers?: boolean;
-  enableCodeBlocks?: boolean;
 }
 
 export function EnhancedContent({ 
@@ -134,31 +76,27 @@ export function EnhancedContent({
   className = '',
   showLineNumbers = false,
   enableCodeBlocks = true 
-}: EnhancedContentProps) {
+}: {
+  content: string;
+  className?: string;
+  showLineNumbers?: boolean;
+  enableCodeBlocks?: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   const { containerRef } = useCodeBlockEnhancer({ 
     content, 
-    enabled: enableCodeBlocks && mounted, 
+    enabled: enableCodeBlocks && mounted,
     showLineNumbers 
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setMounted(true);
-    }
+    setMounted(true);
   }, []);
 
   return (
     <div 
       ref={containerRef}
       className={`prose prose-lg max-w-none dark:prose-invert ${className}`}
-      style={{
-        // Ensure code blocks are properly styled
-        '--tw-prose-pre-bg': '#1f2937',
-        '--tw-prose-pre-code': '#f9fafb',
-        '--tw-prose-invert-pre-bg': '#1f2937',
-        '--tw-prose-invert-pre-code': '#f9fafb'
-      } as React.CSSProperties}
       dangerouslySetInnerHTML={mounted ? { __html: content } : undefined}
     />
   );

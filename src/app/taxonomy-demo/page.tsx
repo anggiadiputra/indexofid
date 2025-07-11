@@ -20,6 +20,7 @@ export default async function TaxonomyDemoPage() {
   return (
     <>
       <SEOHead
+        url="/taxonomy-demo"
         customTitle={`Enhanced Taxonomy System Demo | ${env.site.name}`}
         customDescription="Demonstration of enhanced WordPress taxonomy system with automatic category hierarchy, tag popularity scoring, and RankMath SEO integration."
         pageType="WebPage"
@@ -170,7 +171,7 @@ export default async function TaxonomyDemoPage() {
                   <li className="flex items-start">
                     <span className="text-green-500 mr-2 mt-1">✓</span>
                     <div>
-                      <strong>Full Path Display:</strong> Menampilkan path lengkap (Tech > Frontend > React)
+                      <strong>Full Path Display:</strong> Menampilkan path lengkap (Tech {'>'}  Frontend {'>'}  React)
                     </div>
                   </li>
                   <li className="flex items-start">
@@ -282,7 +283,7 @@ import EnhancedTaxonomy from '@/components/EnhancedTaxonomy';
 import { getEnhancedTaxonomyData } from '@/lib/wordpress-api';
 
 const data = await getEnhancedTaxonomyData();
-console.log(data.categories[0].fullPath); // "Tech > Frontend > React"
+console.log(data.categories[0].fullPath); // "Tech {'>'}  Frontend {'>'}  React"
 console.log(data.tags[0].popularity);    // "high" | "medium" | "low"
 console.log(data.rankMathMeta);          // SEO metadata from RankMath`}
             </pre>

@@ -353,8 +353,6 @@ export default function CodeDemoPage() {
               <EnhancedContent 
                 content={wordpressContent}
                 className="prose prose-lg max-w-none"
-                showLineNumbers={true}
-                enableCodeBlocks={true}
               />
             </div>
           </div>

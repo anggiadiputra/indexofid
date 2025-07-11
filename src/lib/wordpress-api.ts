@@ -68,11 +68,11 @@ class WordPressApiError extends Error {
 
 // PERFORMANCE OPTIMIZATION: Cache TTL values optimized for SSR + aggressive server-side caching
 const CACHE_TTL = {
-  POSTS_LIST: 60 * 60 * 1000,     // 1 hour for post lists (blog page uses 24-hour server cache with SSR)
-  SINGLE_POST: 24 * 60 * 60 * 1000, // 24 hours for individual posts (posts revalidate every 15 days)
-  CATEGORIES: 12 * 60 * 60 * 1000, // 12 hours for categories (category pages revalidate every 24 hours)
-  TAGS: 12 * 60 * 60 * 1000,      // 12 hours for tags (tag pages revalidate every 24 hours)
-  SEARCH: 30 * 60 * 1000,         // 30 minutes for search results (search has dedicated 1-hour cache)
+  POSTS_LIST: 60 * 60 * 1000,     // 1 hour for post lists
+  SINGLE_POST: 60 * 60 * 1000,    // 1 hour for individual posts
+  CATEGORIES: 12 * 60 * 60 * 1000, // 12 hours for categories
+  TAGS: 12 * 60 * 60 * 1000,      // 12 hours for tags
+  SEARCH: 30 * 60 * 1000,         // 30 minutes for search results
   POPULAR: 2 * 60 * 60 * 1000,    // 2 hours for popular posts
 };
 
@@ -286,8 +286,10 @@ export async function getAllPosts(
     page: page.toString(),
     per_page: perPage.toString(),
     _embed: 'true',
+    _fields: 'id,title,slug,content,excerpt,date,modified,_links,_embedded',
     orderby: 'date',
-    order: 'desc'
+    order: 'desc',
+    status: 'publish'
   });
 
   if (categoryId) params.append('categories', categoryId.toString());
@@ -322,7 +324,7 @@ export async function getAllPosts(
   } catch (error) {
     console.error('Error fetching posts:', error);
     
-    // Try fallback API if primary API base is different
+    // Try fallback API if primary fails
     if (API_BASE !== FALLBACK_API_BASE) {
       try {
         console.log('[WordPress API] Trying fallback API endpoint');
@@ -1006,17 +1008,81 @@ export async function checkApiHealth(): Promise<{
  */
 export async function getPostCount(): Promise<number> {
   try {
-    const response = await fetch(`${API_BASE}/posts?per_page=1`, {
+    // Try to get from cache first
+    const cacheKey = 'total_posts_count';
+    const cached = cache.get<number>(cacheKey);
+    if (cached !== undefined && cached !== null) {
+      return cached;
+    }
+
+    const response = await fetch(`${API_BASE}/posts?per_page=1&_fields=id`, {
       headers: {
-        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'NextJS-App/1.0',
       },
     });
-    
+
+    if (!response.ok) {
+      throw new Error(`Failed to get post count: ${response.status} ${response.statusText}`);
+    }
+
     // WordPress returns total posts count in headers
     const totalPosts = parseInt(response.headers.get('X-WP-Total') || '0');
+    
+    if (isNaN(totalPosts) || totalPosts === 0) {
+      // If header is missing or invalid, try to get total from response
+      const data = await response.json();
+      const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '0');
+      if (totalPages > 0) {
+        // If we have total pages, multiply by per_page to get approximate total
+        const approximateTotal = totalPages * 100;
+        cache.set(cacheKey, approximateTotal, CACHE_TTL.POSTS_LIST);
+        return approximateTotal;
+      }
+      console.warn('Could not determine total post count from headers, using fallback method');
+      // Fallback: make another request with larger per_page
+      const fallbackResponse = await fetch(`${API_BASE}/posts?per_page=100&_fields=id`, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'NextJS-App/1.0',
+        },
+      });
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json();
+        if (Array.isArray(fallbackData)) {
+          // Cache the result for 1 hour
+          const count = fallbackData.length;
+          cache.set(cacheKey, count, CACHE_TTL.POSTS_LIST);
+          return count;
+        }
+      }
+      return 0;
+    }
+
+    // Cache the result for 1 hour
+    cache.set(cacheKey, totalPosts, CACHE_TTL.POSTS_LIST);
     return totalPosts;
   } catch (error) {
     console.error('Error getting post count:', error);
+    // Try fallback API if primary failed
+    if (API_BASE !== FALLBACK_API_BASE) {
+      try {
+        const fallbackResponse = await fetch(`${FALLBACK_API_BASE}/posts?per_page=1&_fields=id`, {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'NextJS-App/1.0',
+          },
+        });
+        if (fallbackResponse.ok) {
+          const totalPosts = parseInt(fallbackResponse.headers.get('X-WP-Total') || '0');
+          if (!isNaN(totalPosts) && totalPosts > 0) {
+            return totalPosts;
+          }
+        }
+      } catch (fallbackError) {
+        console.error('Fallback API also failed:', fallbackError);
+      }
+    }
     return 0;
   }
 } 

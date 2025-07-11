@@ -115,7 +115,7 @@ export async function generateStaticParams() {
 }
 
 // PERFORMANCE OPTIMIZATION: Use ISR instead of force-dynamic
-export const revalidate = 1296000; // Revalidate every 15 days
+export const revalidate = 3600; // Revalidate every 1 hour
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;

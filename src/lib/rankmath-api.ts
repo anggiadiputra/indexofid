@@ -100,7 +100,6 @@ class RankMathAPIService {
       // Check server cache first
       const cached = serverCache.get<RankMathSEOData>(cacheKey);
       if (cached) {
-        console.log(`[RankMath] Cache hit for ${fullUrl}`);
         return cached;
       }
 
@@ -207,101 +206,51 @@ class RankMathAPIService {
     const extracted: RankMathExtractedData = {};
     
     try {
-      // Parse meta tags
       const metaTags = this.parseMetaTags(headHtml);
       
-      // Extract basic meta data with fallbacks
       extracted.title = this.extractTitle(headHtml) || 
                        metaTags['title'] ||
                        metaTags['og:title'] ||
                        metaTags['twitter:title'];
-      
-      console.log('[RankMath] Title extraction debug:', {
-        fromTitleTag: this.extractTitle(headHtml),
-        fromTitleMeta: metaTags['title'],
-        fromOgTitle: metaTags['og:title'],
-        fromTwitterTitle: metaTags['twitter:title'],
-        finalTitle: extracted.title
-      });
       
       extracted.description = metaTags['description'] || metaTags['og:description'];
       extracted.keywords = metaTags['keywords'] || 
                           metaTags['keyword'] ||
                           this.generateKeywordsFromContent(extracted.title, extracted.description, extracted.focusKeyword);
                           
-      console.log('[RankMath] Keywords extraction debug:', {
-        fromKeywordsMeta: metaTags['keywords'],
-        fromKeywordMeta: metaTags['keyword'],
-        fromGenerated: this.generateKeywordsFromContent(extracted.title, extracted.description, extracted.focusKeyword),
-        finalKeywords: extracted.keywords
-      });
       extracted.robotsMeta = metaTags['robots'];
       extracted.canonicalUrl = this.extractCanonicalUrl(headHtml);
 
-      // Extract Rank Math specific data
       extracted.focusKeyword = metaTags['rankmath-focus-keyword'] || 
                                metaTags['rank-math-focus-keyword'] || 
                                metaTags['focus-keyword'] ||
                                this.extractFocusKeywordFromContent(headHtml) ||
                                this.generateFallbackFocusKeyword(extracted.title, extracted.description);
-                               
-      console.log('[RankMath] Focus keyword extraction debug:', {
-        fromRankMathMeta: metaTags['rankmath-focus-keyword'],
-        fromRankMathMeta2: metaTags['rank-math-focus-keyword'], 
-        fromFocusKeywordMeta: metaTags['focus-keyword'],
-        fromContent: this.extractFocusKeywordFromContent(headHtml),
-        fromFallback: this.generateFallbackFocusKeyword(extracted.title, extracted.description),
-        finalFocusKeyword: extracted.focusKeyword
-      });
 
       // Extract Open Graph data
       extracted.ogTitle = metaTags['og:title'];
       extracted.ogDescription = metaTags['og:description'];
       extracted.ogImage = metaTags['og:image'];
       extracted.ogType = metaTags['og:type'];
-      
-      // Transform og:url to frontend domain
-      const ogUrl = metaTags['og:url'];
-      if (ogUrl) {
-        extracted.ogUrl = this.transformToFrontendUrl(ogUrl);
-        console.log('[RankMath] OG URL transformed:', {
-          backend: ogUrl,
-          frontend: extracted.ogUrl
-        });
-      }
+      extracted.ogUrl = this.transformToFrontendUrl(metaTags['og:url'] || '');
 
-      // Extract Twitter data
+      // Extract Twitter Card data
       extracted.twitterTitle = metaTags['twitter:title'];
       extracted.twitterDescription = metaTags['twitter:description'];
       extracted.twitterImage = metaTags['twitter:image'];
       extracted.twitterCard = metaTags['twitter:card'];
 
-      // Extract thumbnail/featured image from multiple sources
-      extracted.thumbnail = extracted.ogImage || 
-                           extracted.twitterImage ||
-                           metaTags['thumbnail'] ||
-                           metaTags['featured-image'] ||
-                           this.extractImageFromContent(headHtml);
-      
-      extracted.featuredImage = extracted.thumbnail;
+      // Extract thumbnail and featured image
+      extracted.thumbnail = this.extractImageFromContent(headHtml);
+      extracted.featuredImage = extracted.ogImage || extracted.twitterImage || extracted.thumbnail;
 
       // Extract structured data
       extracted.structuredData = this.getStructuredData(headHtml);
 
-      console.log('[RankMath] Extracted data summary:', {
-        hasTitle: !!extracted.title,
-        hasDescription: !!extracted.description,
-        hasFocusKeyword: !!extracted.focusKeyword,
-        hasThumbnail: !!extracted.thumbnail,
-        hasOgImage: !!extracted.ogImage,
-        hasStructuredData: extracted.structuredData && extracted.structuredData.length > 0
-      });
-
+      return extracted;
     } catch (error) {
-      console.error('[RankMath] Error extracting SEO data:', error);
+      return {};
     }
-
-    return extracted;
   }
 
   /**
@@ -348,7 +297,6 @@ class RankMathAPIService {
     const titleMatch = headHtml.match(/<title[^>]*>([^<]*)<\/title>/i);
     if (titleMatch && titleMatch[1] && titleMatch[1].trim()) {
       const title = titleMatch[1].trim();
-      console.log('[RankMath] Found title in <title> tag:', title);
       return title;
     }
 
@@ -364,12 +312,10 @@ class RankMathAPIService {
       const match = headHtml.match(pattern);
       if (match && match[1] && match[1].trim()) {
         const title = match[1].trim();
-        console.log('[RankMath] Found title in meta tag:', title);
         return title;
       }
     }
 
-    console.log('[RankMath] No title found');
     return undefined;
   }
 
@@ -384,11 +330,6 @@ class RankMathAPIService {
       const backendCanonical = canonicalMatch[1];
       const frontendCanonical = this.transformToFrontendUrl(backendCanonical);
       
-      console.log('[RankMath] Canonical URL transformation:', {
-        backend: backendCanonical,
-        frontend: frontendCanonical
-      });
-      
       return frontendCanonical;
     }
     
@@ -399,48 +340,28 @@ class RankMathAPIService {
    * Transform backend URL to frontend URL for headless setup
    */
   private transformToFrontendUrl(backendUrl: string): string {
+    if (!backendUrl) return '';
+
+    const backendDomain = env.wordpress.backendUrl;
+    const frontendDomain = env.site.url;
+
+    if (!backendDomain || !frontendDomain) {
+      return backendUrl;
+    }
+
     try {
-      const backendDomain = env.wordpress.backendUrl;
-      const frontendDomain = env.wordpress.frontendDomain;
-      
-      console.log('[RankMath] Transform URL debug:', {
-        inputUrl: backendUrl,
-        backendDomain,
-        frontendDomain,
-        envCheck: {
-          backendFromEnv: process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL,
-          frontendFromEnv: process.env.NEXT_PUBLIC_FRONTEND_DOMAIN
-        }
-      });
-      
-      if (!backendDomain || !frontendDomain) {
-        console.warn('[RankMath] Backend or frontend domain not configured, returning original URL');
-        console.warn('[RankMath] Missing domains:', { backendDomain, frontendDomain });
+      // If URL already matches frontend domain, return as is
+      if (backendUrl.startsWith(frontendDomain)) {
         return backendUrl;
       }
-      
-      // Remove trailing slashes for consistent comparison
-      const cleanBackendDomain = backendDomain.replace(/\/$/, '');
-      const cleanFrontendDomain = frontendDomain.replace(/\/$/, '');
-      
-      // Replace backend domain with frontend domain
-      if (backendUrl.startsWith(cleanBackendDomain)) {
-        const transformedUrl = backendUrl.replace(cleanBackendDomain, cleanFrontendDomain);
-        console.log('[RankMath] URL transformed:', {
-          from: backendUrl,
-          to: transformedUrl,
-          backendDomain: cleanBackendDomain,
-          frontendDomain: cleanFrontendDomain
-        });
-        return transformedUrl;
+
+      // If URL matches backend domain, transform it
+      if (backendUrl.startsWith(backendDomain)) {
+        return backendUrl.replace(backendDomain, frontendDomain);
       }
-      
-      // If URL doesn't match backend domain, return as-is
-      console.log('[RankMath] URL not transformed (no domain match):', backendUrl);
+
       return backendUrl;
-      
     } catch (error) {
-      console.error('[RankMath] Error transforming URL:', error);
       return backendUrl;
     }
   }
@@ -481,7 +402,6 @@ class RankMathAPIService {
         const keyword = match[1].trim();
         // Validate keyword (should not be empty or contain obvious placeholders)
         if (keyword.length > 0 && !keyword.includes('placeholder') && !keyword.includes('example')) {
-          console.log('[RankMath] Found focus keyword with pattern:', pattern.source, '=>', keyword);
           return keyword;
         }
       }
@@ -495,25 +415,21 @@ class RankMathAPIService {
         if (typeof data.keywords === 'string') {
           const firstKeyword = data.keywords.split(',')[0].trim();
           if (firstKeyword) {
-            console.log('[RankMath] Found focus keyword in structured data:', firstKeyword);
             return firstKeyword;
           }
         }
         // If keywords is an array, return the first item
         if (Array.isArray(data.keywords) && data.keywords.length > 0) {
-          console.log('[RankMath] Found focus keyword in structured data array:', data.keywords[0]);
           return data.keywords[0];
         }
       }
       
       // Also check for Rank Math specific fields in structured data
       if (data.rankMath && data.rankMath.focusKeyword) {
-        console.log('[RankMath] Found focus keyword in Rank Math data:', data.rankMath.focusKeyword);
         return data.rankMath.focusKeyword;
       }
     }
 
-    console.log('[RankMath] No focus keyword found in content');
     return undefined;
   }
 
@@ -568,11 +484,9 @@ class RankMathAPIService {
     
     if (keywords.length > 0) {
       const result = keywords.join(', ');
-      console.log('[RankMath] Generated keywords from content:', result);
       return result;
     }
     
-    console.log('[RankMath] Could not generate keywords from content');
     return undefined;
   }
 
@@ -595,7 +509,6 @@ class RankMathAPIService {
       if (titleWords.length > 0) {
         // Take first 2-3 meaningful words
         const focusKeyword = titleWords.slice(0, Math.min(3, titleWords.length)).join(' ');
-        console.log('[RankMath] Generated focus keyword from title:', focusKeyword);
         return focusKeyword;
       }
     }
@@ -613,12 +526,10 @@ class RankMathAPIService {
       
       if (descWords.length > 0) {
         const focusKeyword = descWords.slice(0, 2).join(' ');
-        console.log('[RankMath] Generated focus keyword from description:', focusKeyword);
         return focusKeyword;
       }
     }
     
-    console.log('[RankMath] Could not generate fallback focus keyword');
     return undefined;
   }
 
@@ -686,19 +597,10 @@ class RankMathAPIService {
     // For RankMath API, we MUST use WordPress backend URL
     const baseUrl = getBackendUrl();
     
-    console.log('[RankMath] normalizeUrl debug:', {
-      inputUrl: url,
-      backendUrl: baseUrl,
-      envBackendUrl: env.wordpress.backendUrl,
-      envPublicBackendUrl: process.env.NEXT_PUBLIC_WORDPRESS_BACKEND_URL,
-      envBackendUrl2: process.env.WORDPRESS_BACKEND_URL
-    });
-    
     // Ensure URL starts with /
     const normalizedPath = url.startsWith('/') ? url : `/${url}`;
     const fullUrl = `${baseUrl}${normalizedPath}`;
     
-    console.log('[RankMath] URL normalized from', url, 'to', fullUrl);
     return fullUrl;
   }
 

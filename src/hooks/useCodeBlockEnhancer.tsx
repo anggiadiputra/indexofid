@@ -48,6 +48,14 @@ export default function useCodeBlockEnhancer({
         const parent = codeElement.parentElement;
         if (!parent) return;
 
+        // Detect language from class
+        let language = '';
+        const classList = Array.from(codeElement.classList);
+        const langClass = classList.find(cls => cls.startsWith('language-'));
+        if (langClass) {
+          language = langClass.replace('language-', '');
+        }
+
         // Create wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'my-4';
@@ -56,7 +64,7 @@ export default function useCodeBlockEnhancer({
 
         // Create and store root
         const root = createRoot(wrapper);
-        root.render(<CodeBlock>{codeContent}</CodeBlock>);
+        root.render(<CodeBlock language={language}>{codeContent}</CodeBlock>);
         rootsRef.current.push(root);
       } catch (error) {
         console.error('Error processing code block:', error);

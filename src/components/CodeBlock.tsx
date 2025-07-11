@@ -6,14 +6,12 @@ interface CodeBlockProps {
   children: string;
   language?: string;
   className?: string;
-  showLineNumbers?: boolean;
 }
 
 export default function CodeBlock({ 
   children, 
   language = '', 
-  className = '',
-  showLineNumbers = false 
+  className = ''
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
